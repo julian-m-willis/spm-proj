@@ -1,0 +1,410 @@
+{
+  "2024-09-29": {
+    "Sales": {
+      "Sales Manager": {
+        "In office": [
+          "Rahim Khalid"
+        ],
+        "Work from home": []
+      },
+      "Account Manager": {
+        "Work from home": [
+          "Mary Teo",
+          "Janice Chan"
+        ],
+        "In office": [
+          "Susan Goh",
+          "Oliva Lim"
+        ]
+      }
+    },
+    "Consultancy": {
+      "Director": {
+        "Work from home": [
+          "Ernst Sim"
+        ],
+        "In office": []
+      },
+      "Consultant": {
+        "Work from home(AM)": [
+          "Ji Khung"
+        ],
+        "In office": [
+          "Chandra Nguyen",
+          "Rithy Chong"
+        ]
+      }
+    }
+  },
+  "2024-09-30": {
+    "Sales": {
+      "Sales Manager": {
+        "In office": [],
+        "Work from home": [
+          "Rahim Khalid"
+        ]
+      },
+      "Account Manager": {
+        "Work from home": [
+          "Susan Goh"
+        ],
+        "Work from home(PM)": [
+          "Oliva Lim"
+        ],
+        "In office": [
+          "Janice Chan",
+          "Mary Teo"
+        ]
+      }
+    },
+    "Consultancy": {
+      "Director": {
+        "In office": [
+          "Ernst Sim"
+        ]
+      },
+      "Consultant": {
+        "Work from home": [
+          "Ji Khung",
+          "Chandra Nguyen"
+        ],
+        "In office": [
+          "Rithy Chong"
+        ]
+      }
+    }
+  },
+  "2024-10-01": {
+    "Sales": {
+      "Sales Manager": {
+        "In office": [
+          "Rahim Khalid"
+        ],
+        "Work from home": []
+      },
+      "Account Manager": {
+        "Work from home": [
+          "Mary Teo",
+          "Janice Chan"
+        ],
+        "In office": [
+          "Susan Goh",
+          "Oliva Lim"
+        ]
+      }
+    },
+    "Consultancy": {
+      "Director": {
+        "Work from home": [
+          "Ernst Sim"
+        ],
+        "In office": []
+      },
+      "Consultant": {
+        "Work from home(AM)": [
+          "Ji Khung"
+        ],
+        "In office": [
+          "Chandra Nguyen",
+          "Rithy Chong"
+        ]
+      }
+    }
+  },
+  "2024-10-02": {
+    "Sales": {
+      "Sales Manager": {
+        "In office": [
+          "Rahim Khalid"
+        ],
+        "Work from home": []
+      },
+      "Account Manager": {
+        "Work from home": [
+          "Mary Teo",
+          "Janice Chan"
+        ],
+        "In office": [
+          "Susan Goh",
+          "Oliva Lim"
+        ]
+      }
+    },
+    "Consultancy": {
+      "Director": {
+        "Work from home": [
+          "Ernst Sim"
+        ],
+        "In office": []
+      },
+      "Consultant": {
+        "Work from home(AM)": [
+          "Ji Khung"
+        ],
+        "In office": [
+          "Chandra Nguyen",
+          "Rithy Chong"
+        ]
+      }
+    }
+  },
+  "2024-10-03": {
+    "Sales": {
+      "Sales Manager": {
+        "In office": [
+          "Rahim Khalid"
+        ],
+        "Work from home": []
+      },
+      "Account Manager": {
+        "Work from home": [
+          "Mary Teo",
+          "Janice Chan"
+        ],
+        "In office": [
+          "Susan Goh",
+          "Oliva Lim"
+        ]
+      }
+    },
+    "Consultancy": {
+      "Director": {
+        "Work from home": [
+          "Ernst Sim"
+        ],
+        "In office": []
+      },
+      "Consultant": {
+        "Work from home(AM)": [
+          "Ji Khung"
+        ],
+        "In office": [
+          "Chandra Nguyen",
+          "Rithy Chong"
+        ]
+      }
+    }
+  },
+  "2024-10-06": {
+    "Sales": {
+      "Sales Manager": {
+        "In office": [],
+        "Work from home": [
+          "Rahim Khalid"
+        ]
+      },
+      "Account Manager": {
+        "Work from home": [
+          "Mary Teo",
+          "Janice Chan",
+          "Oliva Lim"
+        ],
+        "In office": [
+          "Susan Goh"
+        ]
+      }
+    },
+    "Consultancy": {
+      "Director": {
+        "Work from home": [
+          "Ernst Sim"
+        ],
+        "In office": []
+      },
+      "Consultant": {
+        "Work from home(AM)": [
+          "Ji Khung"
+        ],
+        "In office": [
+          "Chandra Nguyen",
+          "Rithy Chong"
+        ]
+      }
+    }
+  },
+  "2024-10-07": {
+    "Sales": {
+      "Sales Manager": {
+        "In office": [
+          "Rahim Khalid"
+        ],
+        "Work from home": []
+      },
+      "Account Manager": {
+        "Work from home": [
+          "Mary Teo",
+          "Janice Chan",
+          "Susan Goh",
+          "Oliva Lim"
+        ],
+        "In office": [
+        ]
+      }
+    },
+    "Consultancy": {
+      "Director": {
+        "Work from home": [],
+        "In office": [          
+          "Ernst Sim"
+        ]
+      },
+      "Consultant": {
+        "Work from home(AM)": [
+          "Ji Khung"
+        ],
+        "In office": [
+          "Chandra Nguyen",
+          "Rithy Chong"
+        ]
+      }
+    }
+  },
+  "2024-10-08": {
+    "Sales": {
+      "Sales Manager": {
+        "In office": [
+          "Rahim Khalid"
+        ],
+        "Work from home": []
+      },
+      "Account Manager": {
+        "Work from home": [
+          "Mary Teo",
+          "Janice Chan",
+          "Susan Goh",
+          "Oliva Lim"
+        ],
+        "In office": [
+        ]
+      }
+    },
+    "Consultancy": {
+      "Director": {
+        "Work from home": [
+          "Ernst Sim"
+        ],
+        "In office": []
+      },
+      "Consultant": {
+        "Work from home(AM)": [
+          "Ji Khung"
+        ],
+        "In office": [
+          "Chandra Nguyen",
+          "Rithy Chong"
+        ]
+      }
+    }
+  },
+  "2024-10-09": {
+    "Sales": {
+      "Sales Manager": {
+        "In office": [],
+        "Work from home": [
+          "Rahim Khalid"
+        ]
+      },
+      "Account Manager": {
+        "Work from home": [
+          "Mary Teo",
+          "Janice Chan",
+          "Susan Goh",
+          "Oliva Lim"
+        ],
+        "In office": [
+        ]
+      }
+    },
+    "Consultancy": {
+      "Director": {
+        "Work from home": [
+          "Ernst Sim"
+        ],
+        "In office": []
+      },
+      "Consultant": {
+        "Work from home(AM)": [
+          "Ji Khung"
+        ],
+        "In office": [
+          "Chandra Nguyen",
+          "Rithy Chong"
+        ]
+      }
+    }
+  },
+  "2024-10-10": {
+    "Sales": {
+      "Sales Manager": {
+        "In office": [
+          "Rahim Khalid"
+        ],
+        "Work from home": []
+      },
+      "Account Manager": {
+        "Work from home": [
+          "Mary Teo",
+          "Janice Chan",
+          "Susan Goh",
+          "Oliva Lim"
+        ],
+        "In office": [
+        ]
+      }
+    },
+    "Consultancy": {
+      "Director": {
+        "Work from home": [],
+        "In office": [          
+          "Ernst Sim"
+        ]
+      },
+      "Consultant": {
+        "Work from home(AM)": [
+          "Ji Khung"
+        ],
+        "In office": [
+          "Chandra Nguyen",
+          "Rithy Chong"
+        ]
+      }
+    }
+  },
+  "2024-10-11": {
+    "Sales": {
+      "Sales Manager": {
+        "In office": [
+          "Rahim Khalid"
+        ],
+        "Work from home": []
+      },
+      "Account Manager": {
+        "Work from home": [
+          "Mary Teo",
+          "Janice Chan",
+          "Susan Goh",
+          "Oliva Lim"
+        ],
+        "In office": [
+        ]
+      }
+    },
+    "Consultancy": {
+      "Director": {
+        "Work from home": [
+          "Ernst Sim"
+        ],
+        "In office": []
+      },
+      "Consultant": {
+        "Work from home(AM)": [
+          "Ji Khung"
+        ],
+        "In office": [
+          "Chandra Nguyen",
+          "Rithy Chong"
+        ]
+      }
+    }
+  }
+}
