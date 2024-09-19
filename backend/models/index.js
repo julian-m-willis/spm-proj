@@ -20,6 +20,11 @@ db.Schedule = require('./schedule')(sequelize, DataTypes);
 db.Staff.hasMany(db.RequestGroup, { foreignKey: 'staff_id' });
 db.RequestGroup.belongsTo(db.Staff, { foreignKey: 'staff_id' });
 
+// Staff has many Schedules
+db.Staff.hasMany(db.Schedule, { foreignKey: 'staff_id' });
+db.Schedule.belongsTo(db.Staff, { foreignKey: 'staff_id' });
+
+
 // ArrangementRequest belongs to RequestGroup
 db.ArrangementRequest.belongsTo(db.RequestGroup, { foreignKey: 'request_group_id' });
 db.RequestGroup.hasMany(db.ArrangementRequest, { foreignKey: 'request_group_id' });

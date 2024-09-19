@@ -19,7 +19,7 @@ module.exports = (sequelize, DataTypes) => {
     approved_at: DataTypes.DATE,
     request_group_id: {
       type: DataTypes.INTEGER,
-      allowNull: false,
+      allowNull: true,
       index: true,
     },
   }, {
