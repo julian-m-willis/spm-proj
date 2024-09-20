@@ -16,11 +16,6 @@ module.exports = (sequelize, DataTypes) => {
       allowNull: false,
       index: true,
     },
-    end_date: {
-      type: DataTypes.DATE,
-      allowNull: false,
-      index: true,
-    },
     session_type: {
       type: DataTypes.STRING,
     },
@@ -38,8 +33,8 @@ module.exports = (sequelize, DataTypes) => {
     tableName: 'schedules',
     indexes: [
       {
-        unique: false,
-        fields: ['staff_id', 'start_date', 'end_date'],
+        unique: true,
+        fields: ['staff_id', 'start_date'],
       },
     ],
   });
