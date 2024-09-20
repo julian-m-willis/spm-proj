@@ -83,7 +83,9 @@ describe('Schedule Service', () => {
                     'Engineering': {
                         'Developer': {
                             'In office': ['Jane Smith'],
-                            'Work from home': ['John Doe']
+                            'Work from home': ['John Doe'],
+                            'Work from home (AM)': [],
+                            'Work from home (PM)': [],
                         }
                     }
                 },
@@ -91,7 +93,9 @@ describe('Schedule Service', () => {
                     'Engineering': {
                         'Developer': {
                             'In office': ['John Doe'],
-                            'Work from home': ['Jane Smith']
+                            'Work from home': ['Jane Smith'],
+                            'Work from home (AM)': [],
+                            'Work from home (PM)': [],
                         }
                     }
                 },
@@ -99,7 +103,9 @@ describe('Schedule Service', () => {
                     'Engineering': {
                         'Developer': {
                             'In office': ['John Doe', 'Jane Smith'],
-                            'Work from home': []
+                            'Work from home': [],
+                            'Work from home (AM)': [],
+                            'Work from home (PM)': [],
                         }
                     }
                 },
@@ -107,7 +113,9 @@ describe('Schedule Service', () => {
                     'Engineering': {
                         'Developer': {
                             'In office': ['John Doe', 'Jane Smith'],
-                            'Work from home': []
+                            'Work from home': [],
+                            'Work from home (AM)': [],
+                            'Work from home (PM)': [],
                         }
                     }
                 },
@@ -115,7 +123,9 @@ describe('Schedule Service', () => {
                     'Engineering': {
                         'Developer': {
                             'In office': ['John Doe', 'Jane Smith'],
-                            'Work from home': []
+                            'Work from home': [],
+                            'Work from home (AM)': [],
+                            'Work from home (PM)': [],
                         }
                     }
                 },
@@ -123,7 +133,9 @@ describe('Schedule Service', () => {
                     'Engineering': {
                         'Developer': {
                             'In office': ['John Doe', 'Jane Smith'],
-                            'Work from home': []
+                            'Work from home': [],
+                            'Work from home (AM)': [],
+                            'Work from home (PM)': [],
                         }
                     }
                 },
@@ -131,7 +143,9 @@ describe('Schedule Service', () => {
                     'Engineering': {
                         'Developer': {
                             'In office': ['John Doe', 'Jane Smith'],
-                            'Work from home': []
+                            'Work from home': [],
+                            'Work from home (AM)': [],
+                            'Work from home (PM)': [],
                         }
                     }
                 }
@@ -229,7 +243,9 @@ describe('Schedule Service', () => {
                     'Engineering': {
                         'Developer': {
                             'In office': ['John Doe', 'Jane Smith'],
-                            'Work from home': []
+                            'Work from home': [],
+                            'Work from home (AM)': [],
+                            'Work from home (PM)': [],
                         }
                     }
                 },
@@ -237,7 +253,9 @@ describe('Schedule Service', () => {
                     'Engineering': {
                         'Developer': {
                             'In office': ['John Doe', 'Jane Smith'],
-                            'Work from home': []
+                            'Work from home': [],
+                            'Work from home (AM)': [],
+                            'Work from home (PM)': [],
                         }
                     }
                 },
@@ -245,7 +263,9 @@ describe('Schedule Service', () => {
                     'Engineering': {
                         'Developer': {
                             'In office': ['John Doe', 'Jane Smith'],
-                            'Work from home': []
+                            'Work from home': [],
+                            'Work from home (AM)': [],
+                            'Work from home (PM)': [],
                         }
                     }
                 },
@@ -253,7 +273,9 @@ describe('Schedule Service', () => {
                     'Engineering': {
                         'Developer': {
                             'In office': ['John Doe', 'Jane Smith'],
-                            'Work from home': []
+                            'Work from home': [],
+                            'Work from home (AM)': [],
+                            'Work from home (PM)': [],
                         }
                     }
                 },
@@ -261,7 +283,9 @@ describe('Schedule Service', () => {
                     'Engineering': {
                         'Developer': {
                             'In office': ['John Doe', 'Jane Smith'],
-                            'Work from home': []
+                            'Work from home': [],
+                            'Work from home (AM)': [],
+                            'Work from home (PM)': [],
                         }
                     }
                 },
@@ -269,7 +293,9 @@ describe('Schedule Service', () => {
                     'Engineering': {
                         'Developer': {
                             'In office': ['John Doe', 'Jane Smith'],
-                            'Work from home': []
+                            'Work from home': [],
+                            'Work from home (AM)': [],
+                            'Work from home (PM)': [],
                         }
                     }
                 },
@@ -277,7 +303,9 @@ describe('Schedule Service', () => {
                     'Engineering': {
                         'Developer': {
                             'In office': ['John Doe', 'Jane Smith'],
-                            'Work from home': []
+                            'Work from home': [],
+                            'Work from home (AM)': [],
+                            'Work from home (PM)': [],
                         }
                     }
                 }
