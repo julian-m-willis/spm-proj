@@ -32,4 +32,19 @@ exports.getScheduleByDepartment = async (req, res) => {
   }
 };
 
-// Implement other methods similarly
+exports.getScheduleByTeam = async (req, res) => {
+  try {
+    const { start_date, end_date } = req.query;
+    const staff_id = req.user.staff_id;
+
+    const schedules = await scheduleService.getScheduleByTeam({
+      staff_id,
+      start_date,
+      end_date,
+    });
+
+    res.status(200).json(schedules);
+  } catch (error) {
+    res.status(400).json({ error: error.message });
+  }
+};
