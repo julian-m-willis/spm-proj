@@ -11,13 +11,12 @@ exports.getScheduleByDepartment = async ({ departmentname, position, start_date,
   // 1. Retrieve all staff members from the department (filtered by position if provided)
   const staffQuery = {
     where: {
-      dept: departmentname,
+      ...(departmentname && { dept: departmentname }),
       ...(position && { position }), // Add position filter if provided
     },
   };
 
   const allStaff = await Staff.findAll(staffQuery);
-  console.log("All Staff:", allStaff);
   
 
   // 2. Retrieve schedules for staff in the department within the date range
@@ -29,7 +28,7 @@ exports.getScheduleByDepartment = async ({ departmentname, position, start_date,
       {
         model: Staff,
         where: {
-          dept: departmentname,
+          ...(departmentname && { dept: departmentname }),
           ...(position && { position }),
         },
       },
@@ -37,7 +36,6 @@ exports.getScheduleByDepartment = async ({ departmentname, position, start_date,
   };
 
   const schedules = await Schedule.findAll(scheduleQuery);
-  console.log("All Schedules:", schedules);
 
   // Helper function to generate all dates between start_date and end_date
   const generateDateRange = (start, end) => {
@@ -107,7 +105,9 @@ exports.getScheduleByDepartment = async ({ departmentname, position, start_date,
         result[date][departmentKey][positionKey] = {
           "In office": [],
           "Work from home": [],
-        }; // Ensure position key exists
+          "Work from home (AM)": [],
+          "Work from home (PM)": [],
+        }; 
       }
 
       // Check if staff has a schedule for this date
@@ -117,7 +117,11 @@ exports.getScheduleByDepartment = async ({ departmentname, position, start_date,
         // Push to either "Work from home" or "In office" based on session_type
         if (scheduleForDate.session_type === "Work from home") {
           result[date][departmentKey][positionKey]["Work from home"].push(staffName);
-        } else {
+        }else if (scheduleForDate.session_type === "Work from home (AM)") {
+          result[date][departmentKey][positionKey]["Work from home (AM)"].push(staffName);
+        }else if (scheduleForDate.session_type === "Work from home (PM)") {
+          result[date][departmentKey][positionKey]["Work from home (PM)"].push(staffName);
+        }else {
           result[date][departmentKey][positionKey]["In office"].push(staffName);
         }
       } else {
