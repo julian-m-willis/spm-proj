@@ -565,4 +565,52 @@ describe('Schedule Service', () => {
         });
 
     });
+
+    describe('getSchedulePersonal', () => {
+        test('should retrieve own schedules', async () => {
+            const staff_id = 1;
+            const departmentname = 'Engineering';
+            const position = 'Developer';
+            const start_date = '2023-10-01';
+            const end_date = '2023-10-07';
+
+            // Mock data for `Staff.findOne`
+            const staffData1 = { staff_id: 1, staff_fname: 'John', staff_lname: 'Doe', dept: departmentname, position };
+
+            
+            const scheduleData = [
+                { staff_id: 1, start_date: '2023-10-01', session_type: 'Work from home'},
+                { staff_id: 1, start_date: '2023-10-04', session_type: 'Work from home'}
+            ];
+            
+            // Set up mocks
+            Schedule.findAll.mockResolvedValue(scheduleData);
+            Staff.findOne.mockResolvedValue(staffData1);
+
+            const result = await scheduleService.getSchedulePersonal({ staff_id, start_date, end_date });
+            console.log(result);
+
+            expect(Schedule.findAll).toHaveBeenCalledWith({
+                where: {
+                    start_date: { [Op.gte]: start_date, [Op.lte]: end_date },
+                    staff_id,
+                },
+            });
+
+            const expectedOutput = {
+                "staff_id": 1,
+                "schedules": {
+                    "2023-10-01": "Work from home",
+                    "2023-10-02": "In office",
+                    "2023-10-03": "In office",
+                    "2023-10-04": "Work from home",
+                    "2023-10-05": "In office",
+                    "2023-10-06": "In office",
+                    "2023-10-07": "In office"
+                }
+            };
+
+            expect(result).toEqual(expectedOutput);
+        });
+    });
 });
