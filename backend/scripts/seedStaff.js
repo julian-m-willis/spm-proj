@@ -11,7 +11,7 @@ async function seedStaff() {
     const staffData = [];
 
     // Read CSV and parse data
-    fs.createReadStream(path.resolve(__dirname, 'employee.csv'))
+    fs.createReadStream(path.resolve(__dirname, 'employeenew.csv'))
       .pipe(csv())
       .on('data', (row) => {
         staffData.push({
