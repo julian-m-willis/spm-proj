@@ -10,13 +10,34 @@ const providers = [
       email: { label: 'Email Address', type: 'email' },
       password: { label: 'Password', type: 'password' },
     },
-    authorize: async (c) => {
-      return {
-        id: 1,  
-        name: "Test User",  
-        email: "test@email.com",
-      };
-    }
+    authorize: async (credentials) => {
+      try {
+        // Make a POST request to your backend API
+        const response = await axios.post('http://localhost:3001/auth/login', {
+          email: credentials.email,
+          password: credentials.password,
+        });
+
+        const user = response.data.token;
+        // If login is successful and user data is returned
+        if (user) {
+          return {
+            id: user.user.id,
+            name: user.user.name,
+            email: credentials.email,
+            token: user.token,
+            roles: user.user.role, // Assuming the API returns user roles
+          };
+        }
+
+        // If no user is returned
+        return null;
+      } catch (error) {
+        // Handle any error that occurs during the API call
+        console.error('Error during login:', error);
+        return null;
+      }
+    },
   }),
 ];
 

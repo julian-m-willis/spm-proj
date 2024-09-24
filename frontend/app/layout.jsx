@@ -58,13 +58,13 @@ const NAVIGATION = [
     segment: 'schedule/view-department-schedule',
     title: "View Department's Schedule",
     icon: <BusinessIcon />,
-    roles: [2, 3],
+    roles: [1, 3],
   },
   {
     segment: 'schedule/view-organization-schedule',
     title: "View Organization's Schedule",
     icon: <LanguageIcon />,
-    roles: [3],
+    roles: [1],
   },
   {
     kind: 'divider',
