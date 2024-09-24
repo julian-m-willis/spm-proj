@@ -1,4 +1,4 @@
-// File: C:\Users\Julian\Documents\GitHub\spm-proj\frontend3\app\layout.jsx
+// File: C:\Users\Julian\Documents\GitHub\spm-proj\frontend\app\layout.jsx
 import * as entry from '../../../app/layout.js'
 import type { ResolvingMetadata, ResolvingViewport } from 'next/dist/lib/metadata/types/metadata-interface.js'
 

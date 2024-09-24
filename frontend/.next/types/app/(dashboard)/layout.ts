@@ -1,4 +1,4 @@
-// File: C:\Users\Julian\Documents\GitHub\spm-proj\frontend3\app\(dashboard)\layout.tsx
+// File: C:\Users\Julian\Documents\GitHub\spm-proj\frontend\app\(dashboard)\layout.tsx
 import * as entry from '../../../../app/(dashboard)/layout.js'
 import type { ResolvingMetadata, ResolvingViewport } from 'next/dist/lib/metadata/types/metadata-interface.js'
 

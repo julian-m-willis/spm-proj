@@ -1,4 +1,4 @@
-// File: C:\Users\Julian\Documents\GitHub\spm-proj\frontend3\app\api\auth\[...nextAuth]\route.ts
+// File: C:\Users\Julian\Documents\GitHub\spm-proj\frontend\app\api\auth\[...nextAuth]\route.ts
 import * as entry from '../../../../../../app/api/auth/[...nextAuth]/route.js'
 import type { NextRequest } from 'next/server.js'
 

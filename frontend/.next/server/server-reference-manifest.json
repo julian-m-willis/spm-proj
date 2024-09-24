@@ -1,22 +1,5 @@
 {
-  "node": {
-    "61841be13c5e697896e2f38a64a80d17afefe3d1": {
-      "workers": {
-        "app/(dashboard)/page": "(rsc)/./node_modules/next/dist/build/webpack/loaders/next-flight-action-entry-loader.js?actions=%5B%5B%22C%3A%5C%5CUsers%5C%5CJulian%5C%5CDocuments%5C%5CGitHub%5C%5Cspm-proj%5C%5Cfrontend3%5C%5Cauth.js%22%2C%5B%22%24%24ACTION_0%22%5D%5D%5D&__client_imported__=!"
-      },
-      "layer": {
-        "app/(dashboard)/page": "rsc"
-      }
-    },
-    "636db3cb2054b52c525ffbf5b37db4551d99e7d4": {
-      "workers": {
-        "app/auth/signin/page": "(rsc)/./node_modules/next/dist/build/webpack/loaders/next-flight-action-entry-loader.js?actions=%5B%5B%22C%3A%5C%5CUsers%5C%5CJulian%5C%5CDocuments%5C%5CGitHub%5C%5Cspm-proj%5C%5Cfrontend3%5C%5Capp%5C%5Cauth%5C%5Csignin%5C%5Cpage.tsx%22%2C%5B%22%24%24ACTION_0%22%5D%5D%5D&__client_imported__=!"
-      },
-      "layer": {
-        "app/auth/signin/page": "rsc"
-      }
-    }
-  },
+  "node": {},
   "edge": {},
-  "encryptionKey": "7PFw96AkKnhp9QuTPP5zk/GWYc84ow3FkP4b7GGx204="
+  "encryptionKey": "+GpIe2AKsDo7dkdMbffAr5ikVWcvQsoUeuBECEvNRrE="
 }
