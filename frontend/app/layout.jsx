@@ -87,7 +87,7 @@ const NAVIGATION = [
     segment: 'arrangement/approve-arrangements',
     title: 'Approve Arrangements',
     icon: <AssignmentIcon />,
-    roles: [2, 3],
+    roles: [1, 3],
   },
   {
     kind: 'divider',
