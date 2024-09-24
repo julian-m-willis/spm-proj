@@ -9,5 +9,13 @@ exports.login = async (email, password) => {
     throw new Error('Invalid credentials');
   }
   const token = jwt.sign({ staff_id: staff.staff_id, role: staff.role_id }, JWT_SECRET, { expiresIn: '1h' });
-  return token;
+  // return token;
+  return {
+    "token": token,
+    "user": {
+      "id": staff.staff_id,
+      "role": staff.role_id,
+      "name": staff.staff_fname + ' ' + staff.staff_lname,
+    }
+  };
 };
