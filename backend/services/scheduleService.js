@@ -1,4 +1,5 @@
 const { Schedule, Staff } = require('../models');
+const dayjs = require("dayjs");
 const { Op } = require('sequelize');
 const moment = require('moment');
 const staff = require('../models/staff');
@@ -19,9 +20,11 @@ exports.getSchedulePersonal = async ({ staff_id, start_date, end_date }) => {
   const currStaff = await Staff.findOne(currstaffQuery);
 
   // 2. Retrieve schedules for current staff within the date range
+  const startDate = dayjs(start_date).startOf('day').toDate();  
+  const endDate = dayjs(end_date).endOf('day').toDate();    
   const scheduleQuery = {
     where: {
-      start_date: { [Op.gte]: start_date, [Op.lte]: end_date },
+      start_date: { [Op.gte]: startDate, [Op.lte]: endDate },
       staff_id,
     },
   };
@@ -112,9 +115,11 @@ exports.getScheduleByTeam = async ({ staff_id, start_date, end_date }) => {
   
 
   // 2. Retrieve schedules for staff in the department within the date range
+  const startDate = dayjs(start_date).startOf('day').toDate();  
+  const endDate = dayjs(end_date).endOf('day').toDate();    
   const scheduleQuery = {
     where: {
-      start_date: { [Op.gte]: start_date, [Op.lte]: end_date },
+      start_date: { [Op.gte]: startDate, [Op.lte]: endDate },
     },
     include: [
       {
@@ -239,9 +244,11 @@ exports.getScheduleByDepartment = async ({ departmentname, position, start_date,
   
 
   // 2. Retrieve schedules for staff in the department within the date range
+  const startDate = dayjs(start_date).startOf('day').toDate();  
+  const endDate = dayjs(end_date).endOf('day').toDate();    
   const scheduleQuery = {
     where: {
-      start_date: { [Op.gte]: start_date, [Op.lte]: end_date },
+      start_date: { [Op.gte]: startDate, [Op.lte]: endDate },
     },
     include: [
       {

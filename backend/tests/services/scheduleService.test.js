@@ -1,5 +1,6 @@
 const scheduleService = require('../../services/scheduleService');
 const { Op } = require('sequelize');
+const dayjs = require('dayjs');
 
 // Mock the `Staff` and `Schedule` models
 jest.mock('../../models', () => ({
@@ -52,8 +53,7 @@ describe('Schedule Service', () => {
             
             // Set up mocks
             Schedule.findAll.mockResolvedValue(scheduleData);
-            Staff.findAll.mockResolvedValue(staffData);
-
+            Staff.findAll.mockResolvedValue(staffData); 
 
             const result = await scheduleService.getScheduleByDepartment({ departmentname, position, start_date, end_date });
             console.log(result);
@@ -64,9 +64,11 @@ describe('Schedule Service', () => {
                 }
             });
 
+            const startDate = dayjs(start_date).startOf('day').toDate();  
+            const endDate = dayjs(end_date).endOf('day').toDate();   
             expect(Schedule.findAll).toHaveBeenCalledWith({
                 where: {
-                    start_date: { [Op.gte]: start_date, [Op.lte]: end_date }
+                    start_date: { [Op.gte]: startDate, [Op.lte]: endDate }
                 },
                 include: [
                     {
@@ -173,9 +175,11 @@ describe('Schedule Service', () => {
                 }
             });
 
+            const startDate = dayjs(start_date).startOf('day').toDate();  
+            const endDate = dayjs(end_date).endOf('day').toDate();   
             expect(Schedule.findAll).toHaveBeenCalledWith({
                 where: {
-                    start_date: { [Op.gte]: start_date, [Op.lte]: end_date }
+                    start_date: { [Op.gte]: startDate, [Op.lte]: endDate }
                 },
                 include: [
                     {
@@ -224,9 +228,11 @@ describe('Schedule Service', () => {
                 }
             });
 
+            const startDate = dayjs(start_date).startOf('day').toDate();  
+            const endDate = dayjs(end_date).endOf('day').toDate();   
             expect(Schedule.findAll).toHaveBeenCalledWith({
                 where: {
-                    start_date: { [Op.gte]: start_date, [Op.lte]: end_date }
+                    start_date: { [Op.gte]: startDate, [Op.lte]: endDate }
                 },
                 include: [
                     {
@@ -353,9 +359,11 @@ describe('Schedule Service', () => {
                 }
             });
 
+            const startDate = dayjs(start_date).startOf('day').toDate();  
+            const endDate = dayjs(end_date).endOf('day').toDate();   
             expect(Schedule.findAll).toHaveBeenCalledWith({
                 where: {
-                    start_date: { [Op.gte]: start_date, [Op.lte]: end_date }
+                    start_date: { [Op.gte]: startDate, [Op.lte]: endDate }
                 },
                 include: [
                     {
@@ -473,9 +481,11 @@ describe('Schedule Service', () => {
                 }
             });
 
+            const startDate = dayjs(start_date).startOf('day').toDate();  
+            const endDate = dayjs(end_date).endOf('day').toDate();   
             expect(Schedule.findAll).toHaveBeenCalledWith({
                 where: {
-                    start_date: { [Op.gte]: start_date, [Op.lte]: end_date }
+                    start_date: { [Op.gte]: startDate, [Op.lte]: endDate }
                 },
                 include: [
                     {
@@ -590,9 +600,11 @@ describe('Schedule Service', () => {
             const result = await scheduleService.getSchedulePersonal({ staff_id, start_date, end_date });
             console.log(result);
 
+            const startDate = dayjs(start_date).startOf('day').toDate();  
+            const endDate = dayjs(end_date).endOf('day').toDate();   
             expect(Schedule.findAll).toHaveBeenCalledWith({
                 where: {
-                    start_date: { [Op.gte]: start_date, [Op.lte]: end_date },
+                    start_date: { [Op.gte]: startDate, [Op.lte]: endDate },
                     staff_id,
                 },
             });
