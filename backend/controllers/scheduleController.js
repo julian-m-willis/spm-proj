@@ -14,14 +14,31 @@ exports.createSchedule = async (req, res) => {
   }
 };
 
-exports.getScheduleByDepartment = async (req, res) => {
+exports.getScheduleGlobal = async (req, res) => {
   try {
     const { departmentname } = req.params;
     const { position, start_date, end_date } = req.query;
 
-    const schedules = await scheduleService.getScheduleByDepartment({
+    const schedules = await scheduleService.getScheduleGlobal({
       departmentname,
       position,
+      start_date,
+      end_date,
+    });
+
+    res.status(200).json(schedules);
+  } catch (error) {
+    res.status(400).json({ error: error.message });
+  }
+};
+
+exports.getScheduleByDepartment = async (req, res) => {
+  try {
+    const { start_date, end_date } = req.query;
+    const staff_id = req.user.staff_id;
+
+    const schedules = await scheduleService.getScheduleByDepartment({
+      staff_id,
       start_date,
       end_date,
     });
