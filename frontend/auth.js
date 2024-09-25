@@ -26,7 +26,9 @@ const providers = [
             name: user.user.name,
             email: credentials.email,
             token: user.token,
-            roles: user.user.role, // Assuming the API returns user roles
+            roles: user.user.role,
+            dept: user.user.dept,
+            position: user.user.position,
           };
         }
 
@@ -59,11 +61,17 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
     async jwt({ token, user }) {
       if (user) {
         token.roles = user.roles;
+        token.token = user.token;
+        token.dept = user.dept;
+        token.position = user.position;
       }
       return token;
     },
     async session({ session, token, user }) {
       session.user.roles = token.roles;
+      session.user.dept = token.dept;
+      session.user.position = token.position;
+      session.user.token = token.token;
       return session;
     },
     authorized({ auth: session, request: { nextUrl } }) {

@@ -109,8 +109,6 @@ export default async function RootLayout(props) {
   const session = await auth();
   const userRoles = session?.user?.roles; // Assuming roles are stored in session
 
-  console.log(userRoles);
-
   // Filter navigation based on user roles
   const accessibleNavigation = NAVIGATION.filter(item => 
     !item.roles || item.roles.includes(userRoles)
