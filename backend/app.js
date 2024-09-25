@@ -1,10 +1,16 @@
 const express = require('express');
 const app = express();
+const cors = require('cors');
 const authRoutes = require('./routes/authRoutes');
 const arrangementRoutes = require('./routes/arrangementRoutes');
 const scheduleRoutes = require('./routes/scheduleRoutes');
 require('dotenv').config();
 
+app.use(cors({
+  origin: '*', // Allow all origins
+  methods: ['GET', 'POST', 'PUT', 'DELETE'], // Allowed methods
+  credentials: true, // Allow credentials (if needed)
+}));
 // Middleware
 app.use(express.json());
 
@@ -12,6 +18,7 @@ app.use(express.json());
 app.use('/auth', authRoutes);
 app.use('/arrangements', arrangementRoutes);
 app.use('/schedules', scheduleRoutes);
+
 
 // Global Error Handling Middleware
 app.use((err, req, res, next) => {

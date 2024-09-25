@@ -16,6 +16,8 @@ exports.login = async (email, password) => {
       "id": staff.staff_id,
       "role": staff.role_id,
       "name": staff.staff_fname + ' ' + staff.staff_lname,
+      "dept": staff.dept,
+      "position": staff.position,
     }
   };
 };
