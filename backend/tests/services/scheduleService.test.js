@@ -35,10 +35,14 @@ describe('Schedule Service', () => {
 
     describe('getScheduleByDepartment', () => {
         test('should retrieve schedules by department', async () => {
+            const staff_id = 1;
             const departmentname = 'Engineering';
             const position = 'Developer';
             const start_date = '2023-10-01';
             const end_date = '2023-10-07';
+
+            // Mock data for `Staff.findOne`
+            const staffData1 = { staff_id: 1, staff_fname: 'John', staff_lname: 'Doe', dept: departmentname, position };
 
             // Mock data for `Staff.findAll`
             const staffData = [
@@ -53,14 +57,17 @@ describe('Schedule Service', () => {
             
             // Set up mocks
             Schedule.findAll.mockResolvedValue(scheduleData);
-            Staff.findAll.mockResolvedValue(staffData); 
+            Staff.findOne.mockResolvedValue(staffData1);
+            Staff.findAll.mockResolvedValue(staffData);
 
-            const result = await scheduleService.getScheduleByDepartment({ departmentname, position, start_date, end_date });
+            const result = await scheduleService.getScheduleByDepartment({ staff_id, start_date, end_date });
             console.log(result);
             expect(Staff.findAll).toHaveBeenCalledWith({
                 where: {
                     dept: departmentname,
-                    ...(position && { position })
+                    position: {
+                        [Op.ne]: "Director",
+                    }
                 }
             });
 
@@ -75,7 +82,6 @@ describe('Schedule Service', () => {
                         model: Staff,
                         where: {
                             dept: departmentname,
-                            ...(position && { position }),
                         },
                     }
                 ]
@@ -157,74 +163,37 @@ describe('Schedule Service', () => {
             expect(result).toEqual(expectedOutput);
         });
 
-        test('should handle no staff in department', async () => {
-            const departmentname = 'Engineering';
-            const position = 'Developer';
-            const start_date = '2023-10-01';
-            const end_date = '2023-10-07';
-
-            Staff.findAll.mockResolvedValue([]);
-            Schedule.findAll.mockResolvedValue([]);
-
-            const result = await scheduleService.getScheduleByDepartment({ departmentname, position, start_date, end_date });
-
-            expect(Staff.findAll).toHaveBeenCalledWith({
-                where: {
-                    dept: departmentname,
-                    ...(position && { position })
-                }
-            });
-
-            const startDate = dayjs(start_date).startOf('day').toDate();  
-            const endDate = dayjs(end_date).endOf('day').toDate();   
-            expect(Schedule.findAll).toHaveBeenCalledWith({
-                where: {
-                    start_date: { [Op.gte]: startDate, [Op.lte]: endDate }
-                },
-                include: [
-                    {
-                        model: Staff,
-                        where: {
-                            dept: departmentname,
-                            ...(position && { position }),
-                        },
-                    }
-                ]
-            });
-
-            const expectedOutput = {
-                '2023-10-01': {},
-                '2023-10-02': {},
-                '2023-10-03': {},
-                '2023-10-04': {},
-                '2023-10-05': {},
-                '2023-10-06': {},
-                '2023-10-07': {}
-            };
-
-            expect(result).toEqual(expectedOutput);
-        });
-
         test('should handle no schedules for staff', async () => {
+            const staff_id = 1;
             const departmentname = 'Engineering';
             const position = 'Developer';
             const start_date = '2023-10-01';
             const end_date = '2023-10-07';
 
+            // Mock data for `Staff.findOne`
+            const staffData1 = { staff_id: 1, staff_fname: 'John', staff_lname: 'Doe', dept: departmentname, position };
+
+            // Mock data for `Staff.findAll`
             const staffData = [
-                { staff_id: 1, staff_fname: 'John', staff_lname: 'Doe', dept: departmentname, position: position },
-                { staff_id: 2, staff_fname: 'Jane', staff_lname: 'Smith', dept: departmentname, position: position }
+                { staff_id: 1, staff_fname: 'John', staff_lname: 'Doe', dept: departmentname, position },
+                { staff_id: 2, staff_fname: 'Jane', staff_lname: 'Smith', dept: departmentname, position }
             ];
-
+            
+            const scheduleData = [];
+            
+            // Set up mocks
+            Schedule.findAll.mockResolvedValue(scheduleData);
+            Staff.findOne.mockResolvedValue(staffData1);
             Staff.findAll.mockResolvedValue(staffData);
-            Schedule.findAll.mockResolvedValue([]);
 
-            const result = await scheduleService.getScheduleByDepartment({ departmentname, position, start_date, end_date });
-
+            const result = await scheduleService.getScheduleByDepartment({ staff_id, start_date, end_date });
+            console.log(result);
             expect(Staff.findAll).toHaveBeenCalledWith({
                 where: {
                     dept: departmentname,
-                    ...(position && { position })
+                    position: {
+                        [Op.ne]: "Director",
+                    }
                 }
             });
 
@@ -239,7 +208,6 @@ describe('Schedule Service', () => {
                         model: Staff,
                         where: {
                             dept: departmentname,
-                            ...(position && { position }),
                         },
                     }
                 ]

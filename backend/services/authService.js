@@ -8,7 +8,7 @@ exports.login = async (email, password) => {
   if (!staff || !bcrypt.compareSync(password, staff.hashed_password)) {
     throw new Error('Invalid credentials');
   }
-  const token = jwt.sign({ staff_id: staff.staff_id, role: staff.role_id }, JWT_SECRET, { expiresIn: '1h' });
+  const token = jwt.sign({ staff_id: staff.staff_id, role: staff.role_id }, JWT_SECRET, { expiresIn: '720h' });
   // return token;
   return {
     "token": token,
