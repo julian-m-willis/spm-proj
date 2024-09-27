@@ -33,6 +33,115 @@ describe('Schedule Service', () => {
         });
     });
 
+    describe('getScheduleGlobal', () => {
+        test('should retrieve Global schedules', async () => {
+            const staff_id = 1;
+            const departmentname = 'Engineering';
+            const position = 'Developer';
+            const start_date = '2023-10-01';
+            const end_date = '2023-10-07';
+
+            // Mock data for `Staff.findOne`
+            const staffData1 = { staff_id: 1, staff_fname: 'John', staff_lname: 'Doe', dept: departmentname, position };
+
+            // Mock data for `Staff.findAll`
+            const staffData = [
+                { staff_id: 1, staff_fname: 'John', staff_lname: 'Doe', dept: departmentname, position },
+                { staff_id: 2, staff_fname: 'Jane', staff_lname: 'Smith', dept: departmentname, position }
+            ];
+            
+            const scheduleData = [
+                { staff_id: 1, start_date: '2023-10-02', session_type: 'Work from home', Staff: staffData[0]},
+                { staff_id: 2, start_date: '2023-10-02', session_type: 'Work from home (AM)', Staff: staffData[1]},
+                { staff_id: 1, start_date: '2023-10-03', session_type: 'Work from home (PM)', Staff: staffData[0]},
+                { staff_id: 2, start_date: '2023-10-03', session_type: 'Pending', Staff: staffData[1]}
+            ];
+            
+            // Set up mocks
+            Schedule.findAll.mockResolvedValue(scheduleData);
+            Staff.findOne.mockResolvedValue(staffData1);
+            Staff.findAll.mockResolvedValue(staffData);
+
+            const result = await scheduleService.getScheduleGlobal({ start_date, end_date });
+            console.log(result);
+            expect(Staff.findAll).toHaveBeenCalledWith({
+                where: {
+                    }
+                }
+            );
+
+            const startDate = dayjs(start_date).startOf('day').toDate();  
+            const endDate = dayjs(end_date).endOf('day').toDate();   
+            expect(Schedule.findAll).toHaveBeenCalledWith({
+                where: {
+                    start_date: { [Op.gte]: startDate, [Op.lte]: endDate }
+                },
+                include: [
+                    {
+                        model: Staff,
+                        where: {
+                        },
+                    }
+                ]
+            });
+
+            const expectedOutput = {
+                '2023-10-02': {
+                    'Engineering': {
+                        'Developer': {
+                            'In office': [],
+                            'Work from home': ['John Doe'],
+                            'Work from home (AM)': ['Jane Smith'],
+                            'Work from home (PM)': [],
+                        }
+                    }
+                },
+                '2023-10-03': {
+                    'Engineering': {
+                        'Developer': {
+                            'In office': ['Jane Smith'],
+                            'Work from home': [],
+                            'Work from home (AM)': [],
+                            'Work from home (PM)': ['John Doe'],
+                        }
+                    }
+                },
+                '2023-10-04': {
+                    'Engineering': {
+                        'Developer': {
+                            'In office': ['John Doe', 'Jane Smith'],
+                            'Work from home': [],
+                            'Work from home (AM)': [],
+                            'Work from home (PM)': [],
+                        }
+                    }
+                },
+                '2023-10-05': {
+                    'Engineering': {
+                        'Developer': {
+                            'In office': ['John Doe', 'Jane Smith'],
+                            'Work from home': [],
+                            'Work from home (AM)': [],
+                            'Work from home (PM)': [],
+                        }
+                    }
+                },
+                '2023-10-06': {
+                    'Engineering': {
+                        'Developer': {
+                            'In office': ['John Doe', 'Jane Smith'],
+                            'Work from home': [],
+                            'Work from home (AM)': [],
+                            'Work from home (PM)': [],
+                        }
+                    }
+                }
+            };
+
+            expect(result).toEqual(expectedOutput);
+        });
+    });
+    
     describe('getScheduleByDepartment', () => {
         test('should retrieve schedules by department', async () => {
             const staff_id = 1;
@@ -51,8 +160,10 @@ describe('Schedule Service', () => {
             ];
             
             const scheduleData = [
-                { staff_id: 1, start_date: '2023-10-01', session_type: 'Work from home', Staff: staffData[0]},
-                { staff_id: 2, start_date: '2023-10-02', session_type: 'Work from home', Staff: staffData[1]}
+                { staff_id: 1, start_date: '2023-10-02', session_type: 'Work from home', Staff: staffData[0]},
+                { staff_id: 2, start_date: '2023-10-02', session_type: 'Work from home (AM)', Staff: staffData[1]},
+                { staff_id: 1, start_date: '2023-10-03', session_type: 'Work from home (PM)', Staff: staffData[0]},
+                { staff_id: 2, start_date: '2023-10-03', session_type: 'Pending', Staff: staffData[1]}
             ];
             
             // Set up mocks
@@ -88,22 +199,12 @@ describe('Schedule Service', () => {
             });
 
             const expectedOutput = {
-                '2023-10-01': {
-                    'Engineering': {
-                        'Developer': {
-                            'In office': ['Jane Smith'],
-                            'Work from home': ['John Doe'],
-                            'Work from home (AM)': [],
-                            'Work from home (PM)': [],
-                        }
-                    }
-                },
                 '2023-10-02': {
                     'Engineering': {
                         'Developer': {
-                            'In office': ['John Doe'],
-                            'Work from home': ['Jane Smith'],
-                            'Work from home (AM)': [],
+                            'In office': [],
+                            'Work from home': ['John Doe'],
+                            'Work from home (AM)': ['Jane Smith'],
                             'Work from home (PM)': [],
                         }
                     }
@@ -111,10 +212,10 @@ describe('Schedule Service', () => {
                 '2023-10-03': {
                     'Engineering': {
                         'Developer': {
-                            'In office': ['John Doe', 'Jane Smith'],
+                            'In office': ['Jane Smith'],
                             'Work from home': [],
                             'Work from home (AM)': [],
-                            'Work from home (PM)': [],
+                            'Work from home (PM)': ['John Doe'],
                         }
                     }
                 },
@@ -139,16 +240,6 @@ describe('Schedule Service', () => {
                     }
                 },
                 '2023-10-06': {
-                    'Engineering': {
-                        'Developer': {
-                            'In office': ['John Doe', 'Jane Smith'],
-                            'Work from home': [],
-                            'Work from home (AM)': [],
-                            'Work from home (PM)': [],
-                        }
-                    }
-                },
-                '2023-10-07': {
                     'Engineering': {
                         'Developer': {
                             'In office': ['John Doe', 'Jane Smith'],
@@ -214,16 +305,6 @@ describe('Schedule Service', () => {
             });
 
             const expectedOutput = {
-                '2023-10-01': {
-                    'Engineering': {
-                        'Developer': {
-                            'In office': ['John Doe', 'Jane Smith'],
-                            'Work from home': [],
-                            'Work from home (AM)': [],
-                            'Work from home (PM)': [],
-                        }
-                    }
-                },
                 '2023-10-02': {
                     'Engineering': {
                         'Developer': {
@@ -273,16 +354,6 @@ describe('Schedule Service', () => {
                             'Work from home (PM)': [],
                         }
                     }
-                },
-                '2023-10-07': {
-                    'Engineering': {
-                        'Developer': {
-                            'In office': ['John Doe', 'Jane Smith'],
-                            'Work from home': [],
-                            'Work from home (AM)': [],
-                            'Work from home (PM)': [],
-                        }
-                    }
                 }
             };
 
@@ -308,8 +379,10 @@ describe('Schedule Service', () => {
             ];
             
             const scheduleData = [
-                { staff_id: 1, start_date: '2023-10-01', session_type: 'Work from home', Staff: staffData[0]},
-                { staff_id: 2, start_date: '2023-10-02', session_type: 'Work from home', Staff: staffData[1]}
+                { staff_id: 1, start_date: '2023-10-02', session_type: 'Work from home', Staff: staffData[0]},
+                { staff_id: 2, start_date: '2023-10-02', session_type: 'Work from home (AM)', Staff: staffData[1]},
+                { staff_id: 2, start_date: '2023-10-03', session_type: 'Work from home (PM)', Staff: staffData[1]},
+                { staff_id: 1, start_date: '2023-10-03', session_type: 'Pending', Staff: staffData[0]},
             ];
             
             // Set up mocks
@@ -345,22 +418,12 @@ describe('Schedule Service', () => {
             });
 
             const expectedOutput = {
-                '2023-10-01': {
-                    'Engineering': {
-                        'Developer': {
-                            'In office': ['Jane Smith'],
-                            'Work from home': ['John Doe'],
-                            'Work from home (AM)': [],
-                            'Work from home (PM)': [],
-                        }
-                    }
-                },
                 '2023-10-02': {
                     'Engineering': {
                         'Developer': {
-                            'In office': ['John Doe'],
-                            'Work from home': ['Jane Smith'],
-                            'Work from home (AM)': [],
+                            'In office': [],
+                            'Work from home': ['John Doe'],
+                            'Work from home (AM)': ['Jane Smith'],
                             'Work from home (PM)': [],
                         }
                     }
@@ -368,10 +431,10 @@ describe('Schedule Service', () => {
                 '2023-10-03': {
                     'Engineering': {
                         'Developer': {
-                            'In office': ['John Doe', 'Jane Smith'],
+                            'In office': ['John Doe'],
                             'Work from home': [],
                             'Work from home (AM)': [],
-                            'Work from home (PM)': [],
+                            'Work from home (PM)': ['Jane Smith'],
                         }
                     }
                 },
@@ -396,16 +459,6 @@ describe('Schedule Service', () => {
                     }
                 },
                 '2023-10-06': {
-                    'Engineering': {
-                        'Developer': {
-                            'In office': ['John Doe', 'Jane Smith'],
-                            'Work from home': [],
-                            'Work from home (AM)': [],
-                            'Work from home (PM)': [],
-                        }
-                    }
-                },
-                '2023-10-07': {
                     'Engineering': {
                         'Developer': {
                             'In office': ['John Doe', 'Jane Smith'],
@@ -467,16 +520,6 @@ describe('Schedule Service', () => {
             });
 
             const expectedOutput = {
-                '2023-10-01': {
-                    'Engineering': {
-                        'Developer': {
-                            'In office': ['John Doe', 'Jane Smith'],
-                            'Work from home': [],
-                            'Work from home (AM)': [],
-                            'Work from home (PM)': [],
-                        }
-                    }
-                },
                 '2023-10-02': {
                     'Engineering': {
                         'Developer': {
@@ -526,16 +569,6 @@ describe('Schedule Service', () => {
                             'Work from home (PM)': [],
                         }
                     }
-                },
-                '2023-10-07': {
-                    'Engineering': {
-                        'Developer': {
-                            'In office': ['John Doe', 'Jane Smith'],
-                            'Work from home': [],
-                            'Work from home (AM)': [],
-                            'Work from home (PM)': [],
-                        }
-                    }
                 }
             };
 
@@ -557,8 +590,10 @@ describe('Schedule Service', () => {
 
             
             const scheduleData = [
-                { staff_id: 1, start_date: '2023-10-01', session_type: 'Work from home'},
-                { staff_id: 1, start_date: '2023-10-04', session_type: 'Work from home'}
+                { staff_id: 1, start_date: '2023-10-02', session_type: 'Work from home'},
+                { staff_id: 1, start_date: '2023-10-03', session_type: 'Work from home (AM)'},
+                { staff_id: 1, start_date: '2023-10-04', session_type: 'Work from home (PM)'},
+                { staff_id: 1, start_date: '2023-10-05', session_type: 'Pending Work from Home'},
             ];
             
             // Set up mocks
@@ -580,13 +615,11 @@ describe('Schedule Service', () => {
             const expectedOutput = {
                 "staff_id": 1,
                 "schedules": {
-                    "2023-10-01": "Work from home",
-                    "2023-10-02": "In office",
-                    "2023-10-03": "In office",
-                    "2023-10-04": "Work from home",
+                    "2023-10-02": "Work from home",
+                    "2023-10-03": "Work from home (AM)",
+                    "2023-10-04": "Work from home (PM)",
                     "2023-10-05": "In office",
                     "2023-10-06": "In office",
-                    "2023-10-07": "In office"
                 }
             };
 
