@@ -4,6 +4,10 @@ const { Op } = require('sequelize');
 const moment = require('moment');
 const staff = require('../models/staff');
 
+const isWeekend = (date) => {
+  const day = moment(date).day(); // 0 (Sunday) to 6 (Saturday)
+  return day === 0 || day === 6;
+};
 
 exports.createSchedule = async (data) => {
   return await Schedule.create(data);
@@ -38,7 +42,9 @@ exports.getSchedulePersonal = async ({ staff_id, start_date, end_date }) => {
     const dates = [];
 
     while (currentDate <= endDate) {
-      dates.push(currentDate.format('YYYY-MM-DD')); // format as YYYY-MM-DD
+      if (!isWeekend(currentDate)) { // Only include non-weekend dates
+        dates.push(currentDate.format('YYYY-MM-DD'));
+      }
       currentDate = currentDate.add(1, 'days');
     }
 
@@ -141,7 +147,9 @@ exports.getScheduleByTeam = async ({ staff_id, start_date, end_date }) => {
     const dates = [];
 
     while (currentDate <= endDate) {
-      dates.push(currentDate.format('YYYY-MM-DD')); // format as YYYY-MM-DD
+      if (!isWeekend(currentDate)) { // Only include non-weekend dates
+        dates.push(currentDate.format('YYYY-MM-DD'));
+      }
       currentDate = currentDate.add(1, 'days');
     }
 
@@ -191,9 +199,6 @@ exports.getScheduleByTeam = async ({ staff_id, start_date, end_date }) => {
     const departmentKey = staff.dept;
 
     allDates.forEach(date => {
-      if (!result[date]) {
-        result[date] = {}; // Ensure date key exists
-      }
   
       if (!result[date][departmentKey]) {
         result[date][departmentKey] = {}; // Ensure department key exists
@@ -281,7 +286,9 @@ exports.getScheduleByDepartment = async ({ staff_id, start_date, end_date }) => 
     const dates = [];
 
     while (currentDate <= endDate) {
-      dates.push(currentDate.format('YYYY-MM-DD')); // format as YYYY-MM-DD
+      if (!isWeekend(currentDate)) { // Only include non-weekend dates
+        dates.push(currentDate.format('YYYY-MM-DD'));
+      }
       currentDate = currentDate.add(1, 'days');
     }
 
@@ -330,9 +337,6 @@ exports.getScheduleByDepartment = async ({ staff_id, start_date, end_date }) => 
     const departmentKey = staff.dept;
 
     allDates.forEach(date => {
-      if (!result[date]) {
-        result[date] = {}; // Ensure date key exists
-      }
   
       if (!result[date][departmentKey]) {
         result[date][departmentKey] = {}; // Ensure department key exists
@@ -409,7 +413,9 @@ exports.getScheduleGlobal = async ({ departmentname, position, start_date, end_d
     const dates = [];
 
     while (currentDate <= endDate) {
-      dates.push(currentDate.format('YYYY-MM-DD')); // format as YYYY-MM-DD
+      if (!isWeekend(currentDate)) { // Only include non-weekend dates
+        dates.push(currentDate.format('YYYY-MM-DD'));
+      }
       currentDate = currentDate.add(1, 'days');
     }
 
@@ -458,9 +464,6 @@ exports.getScheduleGlobal = async ({ departmentname, position, start_date, end_d
     const departmentKey = staff.dept;
 
     allDates.forEach(date => {
-      if (!result[date]) {
-        result[date] = {}; // Ensure date key exists
-      }
   
       if (!result[date][departmentKey]) {
         result[date][departmentKey] = {}; // Ensure department key exists
