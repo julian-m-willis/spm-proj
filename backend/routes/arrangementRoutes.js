@@ -5,6 +5,7 @@ const authenticateToken = require('../middleware/authenticateTokenMiddleware');
 const authentorizeRole = require('../middleware/authorizeRoleMiddleware');
 
 router.post('/', authenticateToken, authentorizeRole([1, 2, 3]), arrangementController.createArrangement);
-// Apply middleware to other routes as needed
+router.get('/', authenticateToken, authentorizeRole([1, 2, 3]), arrangementController.getAllArrangements);
+
 
 module.exports = router;
