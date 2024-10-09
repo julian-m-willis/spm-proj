@@ -100,9 +100,14 @@ const SchedulePage = () => {
       return <Typography>No schedules available for this date.</Typography>;
     }
 
-    const filteredDepartments = departmentName
-      ? { [departmentName]: allDepartments[departmentName] }
-      : allDepartments;
+    const filteredDepartments = Object.keys(allDepartments)
+    .filter((department) => department !== "CEO")
+    .reduce((acc, department) => {
+      acc[department] = allDepartments[department];
+      console.log("Available departments:", departments);
+
+      return acc;
+    }, {});
 
     return Object.keys(filteredDepartments).map((department) => {
       const departmentSchedules = filteredDepartments[department];
@@ -198,9 +203,12 @@ const SchedulePage = () => {
       return <Typography>No schedules available for this date.</Typography>;
     }
 
-    const filteredDepartments = departmentName
-      ? { [departmentName]: allDepartments[departmentName] }
-      : allDepartments;
+    const filteredDepartments = Object.keys(allDepartments)
+    .filter((department) => department !== "CEO")
+    .reduce((acc, department) => {
+      acc[department] = allDepartments[department];
+      return acc;
+    }, {});
 
     return Object.keys(filteredDepartments).map((department) => {
       const departmentSchedules = filteredDepartments[department];
@@ -281,7 +289,9 @@ const SchedulePage = () => {
           <MenuItem value="">
             <em>All Departments</em>
           </MenuItem>
-          {departments.map((dept) => (
+          {departments
+            .filter((dept) => dept !== "CEO")   
+            .map((dept) => (
             <MenuItem key={dept} value={dept}>
               {dept}
             </MenuItem>
