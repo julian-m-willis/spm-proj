@@ -40,5 +40,17 @@ router.post(
     authenticateToken,
     authorizeRole([1, 3]),
     arrangementController.undo
-  );
+);
+router.post(
+  "/manager/revoke/:id",
+  authenticateToken,
+  authorizeRole([1, 3]),
+  arrangementController.revokeRequest
+);
+router.get(
+  "/manager/approved/",
+  authenticateToken,
+  authorizeRole([1, 3]),
+  arrangementController.getApprovedRequests
+);
 module.exports = router;
