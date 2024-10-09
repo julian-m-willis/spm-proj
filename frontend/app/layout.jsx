@@ -9,27 +9,11 @@ import LanguageIcon from '@mui/icons-material/Language';
 import AddIcon from '@mui/icons-material/Add';
 import CalendarTodayIcon from '@mui/icons-material/CalendarToday';
 import AssignmentIcon from '@mui/icons-material/Assignment';
+import CancelScheduleSendIcon from '@mui/icons-material/CancelScheduleSend';
 // import type { Navigation } from '@toolpad/core';
 import { SessionProvider, signIn, signOut } from 'next-auth/react';
 import { auth } from '../auth';
 import theme from '../theme';
-
-// const NAVIGATION: Navigation = [
-//   {
-//     kind: 'header',
-//     title: 'Main items',
-//   },
-//   {
-//     segment: '',
-//     title: 'Dashboard',
-//     icon: <DashboardIcon />,
-//   },
-//   {
-//     segment: 'orders',
-//     title: 'Orders',
-//     icon: <ShoppingCartIcon />,
-//   },
-// ];
 
 const NAVIGATION = [
   {
@@ -87,6 +71,12 @@ const NAVIGATION = [
     segment: 'arrangement/approve-arrangements',
     title: 'Approve Arrangements',
     icon: <AssignmentIcon />,
+    roles: [1, 3],
+  },
+  {
+    segment: 'arrangement/revoke-arrangements',
+    title: 'Revoke Arrangements',
+    icon: <CancelScheduleSendIcon />,
     roles: [1, 3],
   },
   {
