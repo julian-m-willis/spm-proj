@@ -1,27 +1,27 @@
-// const arrangementService = require('../../services/arrangementService');
-// const sequelize = require('../../models').sequelize;  // Import sequelize instance for transactions
-
-// Mock the `RequestGroup` and `Arrangement` models
+// Mock the `RequestGroup` and `ArrangementRequest` models
 jest.mock('../../models', () => ({
-    ArrangementRequest: {
-        findAll: jest.fn(),
-        create: jest.fn()
-    },
-    RequestGroup: {
-        create: jest.fn(),
-      },
-    sequelize: {
-        transaction: jest.fn(() => ({
-            commit: jest.fn(),
-            rollback: jest.fn(),
-        })),
-    }
+  ArrangementRequest: {
+    findAll: jest.fn(),
+    create: jest.fn(),
+    update: jest.fn(),
+  },
+  RequestGroup: {
+    create: jest.fn(),
+    findByPk: jest.fn(),
+  },
+  Schedule: {
+    upsert: jest.fn(),
+    destroy: jest.fn(),
+  },
+  sequelize: {
+    transaction: jest.fn(() => ({
+      commit: jest.fn(),
+      rollback: jest.fn(),
+    })),
+  },
 }));
 
-
-// const { Arrangement, RequestGroup } = require('../../models');
-
-const { ArrangementRequest, RequestGroup, sequelize } = require('../../models');
+const { ArrangementRequest, RequestGroup, Schedule, sequelize } = require('../../models');
 const arrangementService = require('../../services/arrangementService');
 
 describe('arrangementService', () => {
@@ -84,5 +84,96 @@ describe('arrangementService', () => {
     expect(transactionMock.commit).toHaveBeenCalled();
     expect(result).toBeDefined();
     expect(result.session_type).toBe('Workshop');
+  });
+
+  test('should approve a request and create schedule entries', async () => {
+    const mockRequestGroup = { request_group_id: 1, staff_id: 1001 };
+    const mockRequests = [
+      { arrangement_id: 1, session_type: 'WFH', start_date: '2024-10-01' },
+    ];
+
+    // Mock DB responses
+    RequestGroup.findByPk.mockResolvedValue(mockRequestGroup);
+    ArrangementRequest.findAll.mockResolvedValue(mockRequests);
+    Schedule.upsert.mockResolvedValue();
+
+    const transactionMock = {
+      commit: jest.fn(),
+      rollback: jest.fn(),
+    };
+
+    sequelize.transaction.mockResolvedValue(transactionMock);
+
+    // Call service to approve request
+    const result = await arrangementService.approveRequest(1, 'Approved comment', 1001);
+
+    expect(RequestGroup.findByPk).toHaveBeenCalledWith(1);
+
+    expect(Schedule.upsert).toHaveBeenCalledWith(
+      {
+        staff_id: mockRequestGroup.staff_id,
+        start_date: mockRequests[0].start_date,
+        session_type: mockRequests[0].session_type,
+        request_id: mockRequests[0].arrangement_id,
+      },
+      { transaction: expect.any(Object) }
+    );
+
+    expect(transactionMock.commit).toHaveBeenCalled();
+    expect(result).toBeDefined();
+    expect(result.requestGroup).toEqual(mockRequestGroup);
+  });
+
+  test('should revoke a request and delete the schedule', async () => {
+    const mockRequestGroup = { request_group_id: 1, staff_id: 1001 };
+    const mockRequests = [
+      { arrangement_id: 1, session_type: 'WFH', start_date: '2024-10-01' },
+    ];
+
+    // Mock DB responses
+    RequestGroup.findByPk.mockResolvedValue(mockRequestGroup);
+    ArrangementRequest.findAll.mockResolvedValue(mockRequests);
+    Schedule.destroy.mockResolvedValue();
+
+    const transactionMock = {
+      commit: jest.fn(),
+      rollback: jest.fn(),
+    };
+
+    sequelize.transaction.mockResolvedValue(transactionMock);
+
+    // Call service to revoke request
+    const result = await arrangementService.revokeRequest(1, 'Revoke comment', 1001);
+
+    expect(RequestGroup.findByPk).toHaveBeenCalledWith(1);
+
+    expect(Schedule.destroy).toHaveBeenCalledWith({
+      where: {
+        staff_id: mockRequestGroup.staff_id,
+        start_date: mockRequests[0].start_date,
+        session_type: mockRequests[0].session_type,
+        request_id: mockRequests[0].arrangement_id,
+      },
+      transaction: expect.any(Object),
+    });
+
+    expect(transactionMock.commit).toHaveBeenCalled();
+    expect(result).toBeDefined();
+    expect(result.requestGroup).toEqual(mockRequestGroup);
+  });
+
+  test('should rollback if revoking request fails', async () => {
+    RequestGroup.findByPk.mockRejectedValue(new Error('Revoke failed'));
+
+    const transactionMock = {
+      commit: jest.fn(),
+      rollback: jest.fn(),
+    };
+
+    sequelize.transaction.mockResolvedValue(transactionMock);
+
+    await expect(arrangementService.revokeRequest(1, 'Revoke comment', 1001)).rejects.toThrow('Revoke failed');
+
+    expect(transactionMock.rollback).toHaveBeenCalled();
   });
 });
