@@ -1,4 +1,4 @@
-const arrangementService = require('../services/arrangementService');
+const arrangementService = require("../services/arrangementService");
 
 exports.createArrangement = async (req, res) => {
   try {
@@ -23,3 +23,14 @@ exports.getAllArrangements = async (req, res) => {
   }
 };
 // Implement other methods similarly
+exports.getArrangementbyManager = async (req, res) => {
+  try {
+    const manager_id = req.user.staff_id;
+    const arrangements = await arrangementService.getArrangementByManager(manager_id);
+    res.status(200).json(arrangements);
+  } catch (error) {
+    console.error('Error fetching arrangement requests by manager:', error);
+    res.status(500).json({ error: 'Could not fetch arrangement requests' });
+  }
+};
+
