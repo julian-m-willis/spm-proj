@@ -1,0 +1,85 @@
+{
+    "manager_id": 101,
+    "request_groups": [
+      {
+        "request_group_id": 1,
+        "staff": {
+            "staff_id": 1,
+            "staff_fname": "Test1",
+            "staff_lname": "User1",
+            "dept": "Department1",
+            "position": "Position1"
+        },
+        "request_created_date": "2024-09-15",
+        "arrangement_requests": [
+          {
+            "arrangement_id": 1001,
+            "session_type": "Work from Home",
+            "start_date": "2024-10-01",
+            "description": "Request to work from home due to personal reasons",
+            "request_status": "Pending",
+            "updated_at": "2024-09-16",
+            "approval_comment": null,
+            "approved_at": null
+          },
+          {
+            "arrangement_id": 1002,
+            "session_type": "Work from Home",
+            "start_date": "2024-10-02",
+            "description": "Vacation leave for 5 days",
+            "request_status": "Pending",
+            "updated_at": "2024-09-10",
+            "approval_comment": null,
+            "approved_at": null
+          }
+        ]
+      },
+      {
+        "request_group_id": 2,
+        "staff": {
+            "staff_id": 2,
+            "staff_fname": "Test2",
+            "staff_lname": "User2",
+            "dept": "Department1",
+            "position": "Position1"
+        },
+        "request_created_date": "2024-09-10",
+        "arrangement_requests": [
+          {
+            "arrangement_id": 1003,
+            "session_type": "Remote Work",
+            "start_date": "2024-09-22",
+            "description": "Work from home due to health issues",
+            "request_status": "Pending",
+            "updated_at": "2024-09-18",
+            "approval_comment": null,
+            "approved_at": null
+          }
+        ]
+      },
+      {
+        "request_group_id": 3,
+        "staff": {
+            "staff_id": 3,
+            "staff_fname": "Test3",
+            "staff_lname": "User3",
+            "dept": "Department1",
+            "position": "Position2"
+        },
+        "request_created_date": "2024-09-08",
+        "arrangement_requests": [
+          {
+            "arrangement_id": 1004,
+            "session_type": "Remote Work",
+            "start_date": "2024-09-19",
+            "description": "Work from home due to family emergency",
+            "request_status": "Pending",
+            "updated_at": "2024-09-10",
+            "approval_comment": null,
+            "approved_at": null
+          }
+        ]
+      }
+    ]
+  }
+  
