@@ -1,11 +1,11 @@
-const { ArrangementRequest, RequestGroup, Staff } = require("../models");
-const staff = require("../models/staff");
-const sequelize = require("../models").sequelize; // Import sequelize instance for transactions
+const db = require("../models"); // Centralized import for all models
+const sequelize = db.sequelize; // Import sequelize instance for transactions
 
+// Create arrangement service
 exports.createArrangement = async (arrangementData) => {
   const transaction = await sequelize.transaction(); // Begin a transaction for atomic operations
   try {
-    const newRequestGroup = await RequestGroup.create(
+    const newRequestGroup = await db.RequestGroup.create(
       {
         staff_id: arrangementData.staff_id,
         request_created_date: new Date(),
@@ -13,7 +13,7 @@ exports.createArrangement = async (arrangementData) => {
       { transaction }
     );
 
-    const newArrangement = await ArrangementRequest.create(
+    const newArrangement = await db.ArrangementRequest.create(
       {
         session_type: arrangementData.session_type,
         start_date: arrangementData.start_date,
@@ -28,7 +28,6 @@ exports.createArrangement = async (arrangementData) => {
     );
 
     await transaction.commit();
-
     return newArrangement;
   } catch (error) {
     await transaction.rollback();
@@ -37,9 +36,10 @@ exports.createArrangement = async (arrangementData) => {
   }
 };
 
+// Get all arrangements service
 exports.getAllArrangements = async () => {
   try {
-    const arrangements = await ArrangementRequest.findAll(); // Fetches all records
+    const arrangements = await db.ArrangementRequest.findAll(); // Fetches all records
     return arrangements;
   } catch (error) {
     console.error("Error fetching all arrangement requests:", error);
@@ -47,11 +47,12 @@ exports.getAllArrangements = async () => {
   }
 };
 
+// Get arrangements by manager service
 exports.getArrangementByManager = async (manager_id) => {
-  const requestGroups = await RequestGroup.findAll({
+  const requestGroups = await db.RequestGroup.findAll({
     include: [
       {
-        model: Staff,
+        model: db.Staff, // Use db object for models
         where: { reporting_manager_id: manager_id },
         attributes: [
           "staff_id",
@@ -62,7 +63,8 @@ exports.getArrangementByManager = async (manager_id) => {
         ],
       },
       {
-        model: ArrangementRequest,
+        model: db.ArrangementRequest,
+        where: { request_status: "Pending" },
         attributes: [
           "arrangement_id",
           "session_type",
@@ -89,4 +91,92 @@ exports.getArrangementByManager = async (manager_id) => {
   };
 
   return response;
+};
+
+// Approve request service
+exports.approveRequest = async (id, comment, manager_id) => {
+  const transaction = await sequelize.transaction();
+  try {
+    // Find the request group
+    const requestGroup = await db.RequestGroup.findByPk(id);
+    if (!requestGroup) throw new Error("Request group not found");
+
+    //Validation check to see if manager allowed to approve
+
+    // Update request group status to approved
+    await db.ArrangementRequest.update(
+      { request_status: "Approved", approval_comment: comment },
+      { where: { request_group_id: id } },
+      { transaction }
+    );
+
+    // Create schedule entries
+    const requests = await db.ArrangementRequest.findAll({
+      where: { request_group_id: id },
+    });
+
+    for (const request of requests) {
+      await db.Schedule.upsert(
+        {
+          staff_id: requestGroup.staff_id, // Adjust as needed
+          start_date: request.start_date,
+          session_type: request.session_type,
+          request_id: request.arrangement_id,
+        },
+        { transaction }
+      );
+    }
+
+    await transaction.commit();
+    return { requestGroup };
+  } catch (error) {
+    await transaction.rollback();
+    throw error; // Rethrow the error for the controller to handle
+  }
+};
+
+exports.rejectRequest = async (id, comment, manager_id) => {
+  const transaction = await sequelize.transaction();
+  try {
+    // Find the request group
+    const requestGroup = await db.RequestGroup.findByPk(id);
+    if (!requestGroup) throw new Error("Request group not found");
+
+    //Validation check to see if manager allowed to approve
+
+    // Update request group status to approved
+    await db.ArrangementRequest.update(
+      { request_status: "Rejected", approval_comment: comment },
+      { where: { request_group_id: id } },
+      { transaction }
+    );
+    await transaction.commit();
+    return { requestGroup };
+  } catch (error) {
+    await transaction.rollback();
+    throw error; // Rethrow the error for the controller to handle
+  }
+};
+
+exports.undo = async (id, comment, manager_id) => {
+  const transaction = await sequelize.transaction();
+  try {
+    // Find the request group
+    const requestGroup = await db.RequestGroup.findByPk(id);
+    if (!requestGroup) throw new Error("Request group not found");
+
+    //Validation check to see if manager allowed to approve
+
+    // Update request group status to approved
+    await db.ArrangementRequest.update(
+      { request_status: "Pending", approval_comment: comment },
+      { where: { request_group_id: id } },
+      { transaction }
+    );
+    await transaction.commit();
+    return { requestGroup };
+  } catch (error) {
+    await transaction.rollback();
+    throw error; // Rethrow the error for the controller to handle
+  }
 };

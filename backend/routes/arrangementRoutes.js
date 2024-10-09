@@ -23,5 +23,22 @@ router.get(
   authorizeRole([1, 3]),
   arrangementController.getArrangementbyManager
 );
-
+router.post(
+  "/manager/approve/:id",
+  authenticateToken,
+  authorizeRole([1, 3]),
+  arrangementController.approveRequest
+);
+router.post(
+  "/manager/reject/:id",
+  authenticateToken,
+  authorizeRole([1, 3]),
+  arrangementController.rejectRequest
+);
+router.post(
+    "/manager/undo/:id",
+    authenticateToken,
+    authorizeRole([1, 3]),
+    arrangementController.undo
+  );
 module.exports = router;

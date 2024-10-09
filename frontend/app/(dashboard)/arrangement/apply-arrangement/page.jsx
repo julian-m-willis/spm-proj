@@ -13,8 +13,8 @@ import {
   TextField,
   Typography,
   useMediaQuery
- } from '@mui/material';
- import axios from "axios";
+} from '@mui/material';
+import axios from "axios";
 
 const ApplyArrangementPage = () => {
   const { data: session} = useSession();
@@ -84,9 +84,9 @@ const ApplyArrangementPage = () => {
           label="Session Type"
           onChange={handleSessionType}
         >
-          <MenuItem value={"wfhRegular"}>Work from Home</MenuItem>
-          <MenuItem value={"wfhAM"}>Work from Home (AM)</MenuItem>
-          <MenuItem value={"wfhPM"}>Work from Home (PM)</MenuItem>
+          <MenuItem value={"Work from home"}>Work from Home</MenuItem>
+          <MenuItem value={"Work from home (AM)"}>Work from Home (AM)</MenuItem>
+          <MenuItem value={"Work from home (PM)"}>Work from Home (PM)</MenuItem>
         </Select>
         <TextField
           type="date"
