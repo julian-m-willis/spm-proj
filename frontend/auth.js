@@ -52,7 +52,7 @@ export const providerMap = providers.map((provider) => {
 });
 
 export const { handlers, auth, signIn, signOut } = NextAuth({
-  trustedHosts: ['localhost', '127.0.0.1'],
+  trustHost: true,
   providers,
   secret: process.env.AUTH_SECRET,
   pages: {
