@@ -53,7 +53,7 @@ jobs:
       - name: Extract coverage percentage
         id: coverage
         run: |
-          COVERAGE=$(grep -Po '^\s*lines\.*:\s*\K[0-9.]+(?=%)' ./backend/coverage/lcov-report/index.html)
+          COVERAGE=$(grep -Po '(?<="strong">)[0-9.]+(?=%)' ./backend/coverage/lcov-report/index.html | head -n 1)
           echo "::set-output name=coverage::$COVERAGE"
         working-directory: ./backend
 
