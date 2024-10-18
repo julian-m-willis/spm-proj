@@ -36,7 +36,7 @@ db.ArrangementRequest.hasMany(db.Schedule, { foreignKey: 'request_id' });
 // Sync models (sync all tables)
 db.sequelize.sync({ force: false })
   .then(() => {
-    console.log("Models synced successfully.");
+    // console.log("Models synced successfully.");
   })
   .catch(err => {
     console.error("Error syncing models:", err);
