@@ -34,7 +34,7 @@ jobs:
       - name: Set up Node.js
         uses: actions/setup-node@v3
         with:
-          node-version: '16'
+          node-version: '20'
 
       - name: Install dependencies
         run: npm install
@@ -54,19 +54,20 @@ jobs:
         id: coverage
         run: |
           COVERAGE=$(grep -Po '(?<="strong">)[0-9.]+(?=%)' ./backend/coverage/lcov-report/index.html | head -n 1)
-          echo "::set-output name=coverage::$COVERAGE"
+          echo "coverage=$COVERAGE" >> $GITHUB_ENV
         working-directory: ./backend
 
       - name: Update README with coverage badge
         run: |
-          sed -i "s/coverage-[0-9.]*%25/coverage-${{ steps.coverage.outputs.coverage }}%25/g" README.md
+          sed -i "s/coverage-[0-9.]*%25/coverage-${{ env.coverage }}%25/g" README.md
         working-directory: ./
+
       
       - name: Commit and push README with updated badge
         run: |
           git config --global user.name "github-actions"
           git config --global user.email "github-actions@github.com"
           git add README.md
-          git commit -m "Update coverage badge to ${{ steps.coverage.outputs.coverage }}%"
+          git commit -m "docs(automated): Update coverage badge to ${{ steps.coverage.outputs.coverage }}%"
           git push
         if: steps.coverage.outputs.coverage != ''
