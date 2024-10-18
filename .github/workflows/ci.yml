@@ -1,4 +1,4 @@
-name: CI for Express.js Backend with Coverage
+name: CI for Express.js Backend with Coverage and Badge Update
 
 on:
   push:
@@ -41,7 +41,13 @@ jobs:
         working-directory: ./backend
 
       - name: Run Jest tests with coverage
-        run: npm test -- --coverage
+        env:
+          PGUSER: postgres
+          PGPASSWORD: myStrongPassword
+          PGDATABASE: test_db
+          PGHOST: localhost
+          PGPORT: 5432
+        run: npm test -- --runInBand --coverage
         working-directory: ./backend
 
       - name: Extract coverage percentage
@@ -54,3 +60,13 @@ jobs:
       - name: Update README with coverage badge
         run: |
           sed -i "s/coverage-[0-9.]*%25/coverage-${{ steps.coverage.outputs.coverage }}%25/g" README.md
+        working-directory: ./
+      
+      - name: Commit and push README with updated badge
+        run: |
+          git config --global user.name "github-actions"
+          git config --global user.email "github-actions@github.com"
+          git add README.md
+          git commit -m "Update coverage badge to ${{ steps.coverage.outputs.coverage }}%"
+          git push
+        if: steps.coverage.outputs.coverage != ''
