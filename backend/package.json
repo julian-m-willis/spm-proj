@@ -6,7 +6,7 @@
   "scripts": {
     "start": "node app.js",
     "dev": "nodemon app.js",
-    "test": "jest --forceExit --detectOpenHandles",
+    "test": "jest --forceExit",
     "coverage": "jest --coverage"
   },
   "keywords": [],
