@@ -32,21 +32,18 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v3
 
-      # Step 2: Navigate to the backend directory
-      - name: Navigate to backend
-        working-directory: ./backend
-
-      # Step 3: Set up Node.js
+      # Step 2: Set up Node.js
       - name: Set up Node.js
         uses: actions/setup-node@v3
         with:
           node-version: '16'  # Adjust to the version you're using locally
 
-      # Step 4: Install dependencies
+      # Step 3: Install dependencies (inside backend directory)
       - name: Install dependencies
         run: npm install
+        working-directory: ./backend  # Set the working directory for this step
 
-      # Step 5: Wait for PostgreSQL to be ready
+      # Step 4: Wait for PostgreSQL to be ready
       - name: Wait for PostgreSQL to be ready
         run: |
           until pg_isready --host=localhost --port=5432 --username=postgres; do
@@ -54,9 +51,10 @@ jobs:
             sleep 5
           done
 
-      # Step 6: Set up environment variables for tests
+      # Step 5: Set up environment variables for tests
       - name: Set environment variables
         run: echo "DB_HOST=localhost" >> $GITHUB_ENV
+
       - name: Export secrets
         run: |
           echo "DB_NAME=test_db" >> $GITHUB_ENV
@@ -64,7 +62,7 @@ jobs:
           echo "DB_PASSWORD=myStrongPassword" >> $GITHUB_ENV
           echo "DB_PORT=5432" >> $GITHUB_ENV
 
-      # Step 7: Run tests
+      # Step 6: Run tests (inside backend directory)
       - name: Run Jest tests
         env:
           NODE_ENV: test
@@ -74,3 +72,4 @@ jobs:
           DB_PASSWORD: ${{ env.DB_PASSWORD }}
           DB_PORT: ${{ env.DB_PORT }}
         run: npm test
+        working-directory: ./backend  # Set the working directory for this step
