@@ -11,10 +11,16 @@ jest.mock('../../models', () => ({
     Schedule: {
         findAll: jest.fn(),
         create: jest.fn()
+    },
+    ArrangementRequest: {
+        findAll: jest.fn(),
+    },
+    RequestGroup: {
+        findOne: jest.fn(),
     }
 }));
 
-const { Staff, Schedule } = require('../../models');
+const { Staff, Schedule, ArrangementRequest, RequestGroup } = require('../../models');
 
 describe('Schedule Service', () => {
     beforeEach(() => {
@@ -580,31 +586,34 @@ describe('Schedule Service', () => {
     describe('getSchedulePersonal', () => {
         test('should retrieve own schedules', async () => {
             const staff_id = 1;
-            const departmentname = 'Engineering';
-            const position = 'Developer';
             const start_date = '2023-10-01';
             const end_date = '2023-10-07';
 
             // Mock data for `Staff.findOne`
-            const staffData1 = { staff_id: 1, staff_fname: 'John', staff_lname: 'Doe', dept: departmentname, position };
+            const staffData = { staff_id: 1, staff_fname: 'John', staff_lname: 'Doe' };
 
-            
+            // Mock data for `Schedule.findAll`
             const scheduleData = [
-                { staff_id: 1, start_date: '2023-10-02', session_type: 'Work from home'},
-                { staff_id: 1, start_date: '2023-10-03', session_type: 'Work from home (AM)'},
-                { staff_id: 1, start_date: '2023-10-04', session_type: 'Work from home (PM)'},
-                { staff_id: 1, start_date: '2023-10-05', session_type: 'Pending Work from Home'},
+                { staff_id: 1, start_date: '2023-10-02', session_type: 'Work from home' },
+                { staff_id: 1, start_date: '2023-10-03', session_type: 'Work from home (AM)' },
+                { staff_id: 1, start_date: '2023-10-04', session_type: 'Work from home (PM)' }
             ];
-            
+
+            // Mock data for `ArrangementRequest.findAll`
+            const pendingRequestsData = [
+                { start_date: '2023-10-05', request_status: 'Pending', RequestGroup: { staff_id: 1 } }
+            ];
+
             // Set up mocks
+            Staff.findOne.mockResolvedValue(staffData);
             Schedule.findAll.mockResolvedValue(scheduleData);
-            Staff.findOne.mockResolvedValue(staffData1);
+            ArrangementRequest.findAll.mockResolvedValue(pendingRequestsData);
 
             const result = await scheduleService.getSchedulePersonal({ staff_id, start_date, end_date });
-            console.log(result);
 
-            const startDate = dayjs(start_date).startOf('day').toDate();  
-            const endDate = dayjs(end_date).endOf('day').toDate();   
+            const startDate = dayjs(start_date).startOf('day').toDate();
+            const endDate = dayjs(end_date).endOf('day').toDate();
+
             expect(Schedule.findAll).toHaveBeenCalledWith({
                 where: {
                     start_date: { [Op.gte]: startDate, [Op.lte]: endDate },
@@ -612,14 +621,27 @@ describe('Schedule Service', () => {
                 },
             });
 
+            expect(ArrangementRequest.findAll).toHaveBeenCalledWith({
+                where: {
+                    request_status: 'Pending',
+                    start_date: { [Op.gte]: startDate, [Op.lte]: endDate },
+                },
+                include: [
+                    {
+                        model: RequestGroup,
+                        where: { staff_id },
+                    }
+                ],
+            });
+
             const expectedOutput = {
-                "staff_id": 1,
-                "schedules": {
+                staff_id: 1,
+                schedules: {
                     "2023-10-02": "Work from home",
                     "2023-10-03": "Work from home (AM)",
                     "2023-10-04": "Work from home (PM)",
-                    "2023-10-05": "In office",
-                    "2023-10-06": "In office",
+                    "2023-10-05": "Pending Arrangement Request",
+                    "2023-10-06": "In office"
                 }
             };
 
