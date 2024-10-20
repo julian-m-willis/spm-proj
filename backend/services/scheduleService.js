@@ -1,4 +1,4 @@
-const { Schedule, Staff } = require('../models');
+const { Schedule, Staff, ArrangementRequest, RequestGroup } = require('../models');
 const dayjs = require("dayjs");
 const { Op } = require('sequelize');
 const moment = require('moment');
@@ -26,6 +26,7 @@ exports.getSchedulePersonal = async ({ staff_id, start_date, end_date }) => {
   // 2. Retrieve schedules for current staff within the date range
   const startDate = dayjs(start_date).startOf('day').toDate();  
   const endDate = dayjs(end_date).endOf('day').toDate();    
+
   const scheduleQuery = {
     where: {
       start_date: { [Op.gte]: startDate, [Op.lte]: endDate },
@@ -34,6 +35,20 @@ exports.getSchedulePersonal = async ({ staff_id, start_date, end_date }) => {
   };
 
   const schedules = await Schedule.findAll(scheduleQuery);
+
+  // 3. Check for pending arrangement requests within the date range by joining RequestGroup and filtering by staff_id
+  const pendingRequests = await ArrangementRequest.findAll({
+    where: {
+      request_status: 'Pending', // Assuming 'pending' is the status for requests awaiting approval
+      start_date: { [Op.gte]: startDate, [Op.lte]: endDate },
+    },
+    include: [{
+      model: RequestGroup,
+      where: {
+        staff_id, // Filter based on the staff_id from the joined RequestGroup
+      },
+    }],
+  });
 
   // Helper function to generate all dates between start_date and end_date
   const generateDateRange = (start, end) => {
@@ -58,10 +73,8 @@ exports.getSchedulePersonal = async ({ staff_id, start_date, end_date }) => {
 
   // Create a lookup table for schedules by staff and date
   const scheduleLookup = {};
-
   schedules.forEach(schedule => {
     const dateKey = moment(schedule.start_date).format('YYYY-MM-DD');
-
     if (!scheduleLookup[dateKey]) {
       scheduleLookup[dateKey] = {
         session_type: schedule.session_type,
@@ -69,33 +82,46 @@ exports.getSchedulePersonal = async ({ staff_id, start_date, end_date }) => {
     }
   });
 
+  // Create a lookup table for pending arrangement requests by date
+  const pendingRequestLookup = {};
+  pendingRequests.forEach(request => {
+    const dateKey = moment(request.start_date).format('YYYY-MM-DD');
+    pendingRequestLookup[dateKey] = 'Pending Arrangement Request';
+  });
+
   allDates.forEach(date => {
     if (!result[date]) {
       result[date] = ""; // Ensure date key exists
     }
 
-    if (scheduleLookup[date]) {
+    if (pendingRequestLookup[date]) {
+      result[date] = pendingRequestLookup[date]; // Mark as pending request
+    } else if (scheduleLookup[date]) {
       const scheduleForDate = scheduleLookup[date];
 
       // Push to either "Work from home" or "In office" based on session_type
       if (scheduleForDate.session_type === "Work from home") {
         result[date] = "Work from home";
-      }else if (scheduleForDate.session_type === "Work from home (AM)") {
+      } else if (scheduleForDate.session_type === "Work from home (AM)") {
         result[date] = "Work from home (AM)";
-      }else if (scheduleForDate.session_type === "Work from home (PM)") {
+      } else if (scheduleForDate.session_type === "Work from home (PM)") {
         result[date] = "Work from home (PM)";
-      }else {
+      } else {
         result[date] = "In office";
       }
     } else {
       result[date] = "In office";
     }
   });
+
   return {
     staff_id: staff_id,
-    schedules: result
+    schedules: result,
   };
 };
+
+
+
 
 exports.getScheduleByTeam = async ({ staff_id, start_date, end_date }) => {
   // 0. Retrieve the current logged-in staff

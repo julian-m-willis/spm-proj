@@ -19,15 +19,17 @@ function CustomDay(props) {
   const formattedDay = day.format('YYYY-MM-DD');
   const scheduleForDay = schedules[formattedDay] || null;
 
-  // Determine badge content based on the schedule
+  // Determine badge content based on the schedule, adding "Pending" status
   const badgeContent = scheduleForDay
     ? scheduleForDay === "WFH" 
       ? '🏡' 
       : scheduleForDay === "WFH (AM)" 
         ? '🌞' 
         : scheduleForDay === "WFH (PM)" 
-          ? '🌚' 
-          : '🏢'  // Default to InOffice if none of the WFH statuses match
+          ? '🌚'
+          : scheduleForDay === "Pending Arrangement Request"
+            ? '⏳'  // Display pending status
+            : '🏢'  // Default to In-Office
     : undefined;
 
   return (
@@ -100,6 +102,7 @@ export default function ResponsiveCalendar() {
   const getScheduleColor = (scheduleType) => {
     if (scheduleType.startsWith('WFH')) return '#2196F3';  // Blue for WFH
     if (scheduleType.startsWith('In office')) return '#4CAF50';  // Green for In-Office
+    if (scheduleType === 'Pending Arrangement Request') return '#FF9800';  // Orange for Pending
     if (scheduleType.startsWith('WFH (AM)') || scheduleType.startsWith('WFH (PM)')) return 'orange';  // Orange for half-day
     return 'inherit';  // Default (if no schedule)
   };
@@ -159,6 +162,9 @@ export default function ResponsiveCalendar() {
                 </Grid>
                 <Grid item xs={12}>
                   <Typography variant="body2">🏢 In-Office</Typography>
+                </Grid>
+                <Grid item xs={12}>
+                  <Typography variant="body2">⏳ Pending Arrangement Request</Typography>
                 </Grid>
               </Grid>
             </Box>
