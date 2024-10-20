@@ -10,6 +10,9 @@ exports.createArrangement = async (req, res) => {
     const arrangement = await arrangementService.createArrangement(data);
     res.status(201).json(arrangement);
   } catch (error) {
+    if (error.message === "An arrangement already exists for this date") {
+      return res.status(400).json({ error: error.message });  // Send 400 status for bad request
+    }
     res.status(500).json({ error: error.message });
   }
 };

@@ -27,5 +27,12 @@ module.exports = (sequelize, DataTypes) => {
     tableName: 'arrangement_requests',
   });
 
+  ArrangementRequest.associate = function(models) {
+    ArrangementRequest.belongsTo(models.RequestGroup, {
+      foreignKey: 'request_group_id',
+      as: 'RequestGroup'
+    });
+  };  
+
   return ArrangementRequest;
 };

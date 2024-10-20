@@ -3,6 +3,7 @@
 import React, { useEffect, useState } from "react";
 import { useSession } from "next-auth/react";
 import dayjs from "dayjs";
+// import dayjsBusinessDays from 'dayjs-business-days';
 import {
   Button,
   Container,
@@ -15,11 +16,29 @@ import {
   useMediaQuery
 } from '@mui/material';
 import axios from "axios";
+import moment from "moment";
+
+// disable keyboard inputs
+const disableKeyboardInput = (event) => {
+  event.preventDefault();
+};
+
+const addBusinessDays = (date, days) => {
+  let tempDate = moment(date); // Create a copy of the date
+  while (days > 0) {
+    tempDate = tempDate.add(1, 'days'); // Add one day
+    // If the day is not Saturday (6) or Sunday (0), count it as a business day
+    if (tempDate.isoWeekday() !== 6 && tempDate.isoWeekday() !== 7) {
+      days -= 1;
+    }
+  }
+  return tempDate;
+};
 
 const ApplyArrangementPage = () => {
   const { data: session} = useSession();
   const [token, setToken] = useState(null);
-  const [selectedDate, setSelectedDate] = useState(dayjs());
+  const [selectedDate, setSelectedDate] = useState(addBusinessDays(moment(), 2));
   const [loading, setLoading] = useState(false);
   const [selectedRole, setSelectedRole] = useState("");
   const [schedules, setSchedules] = useState({});
@@ -27,6 +46,8 @@ const ApplyArrangementPage = () => {
   const isMobile = useMediaQuery("(max-width:600px)");
   const [sessionType, setSessionType] = useState("")
   const [desc, setDesc] = useState("")
+  const [errorMessage, setErrorMessage] = useState('');  // Line added
+
 
   const handleSessionType = (event) => {
     setSessionType(event.target.value)
@@ -39,12 +60,37 @@ const ApplyArrangementPage = () => {
   const handleDateChange = (event) => {
     const newDate = dayjs(event.target.value);
     const today = dayjs().startOf('day'); // Get today's date at the start of the day
-
-    if (newDate.isAfter(today)) {
-      setSelectedDate(newDate);
-    } else {
-      alert("Please select a date that is in the future.");
+    if (newDate.day() == 0 || newDate.day() == 6) {
+      alert("Please select a weekday")
     }
+    else {
+      if (today.day() == 4) {
+        const checkdate = today.add(4, 'day')
+        if (newDate.isAfter(checkdate)) {
+          setSelectedDate(newDate);
+        } else {
+          alert("Please select a date that is at least 2 working days later.");
+        }
+      }
+      else if (today.day() == 5) {
+        const checkdate = today.add(3, 'day')
+        if (newDate.isAfter(checkdate)) {
+          setSelectedDate(newDate);
+        } else {
+          alert("Please select a date that is at least 2 working days later.");
+        }
+      }
+      else {
+        const checkdate = today.add(2, 'day')
+        if (newDate.isAfter(checkdate)) {
+          setSelectedDate(newDate);
+        } else {
+          alert("Please select a date that is at least 2 working days later.");
+        }
+      }
+
+    }
+
   };
 
   const fetchScheduleData = async () => {
@@ -145,6 +191,8 @@ const ApplyArrangementPage = () => {
         <TextField
           type="date"
           value={selectedDate.format("YYYY-MM-DD")}
+          onKeyDown={disableKeyboardInput}  // Disable typing in the input field
+          
           onChange={handleDateChange}
           style={{ marginBottom: "20px", marginTop: "20px" }}
         />

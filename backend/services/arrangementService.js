@@ -1,38 +1,97 @@
 const db = require("../models"); // Centralized import for all models
 const sequelize = db.sequelize; // Import sequelize instance for transactions
+const { Op } = require('sequelize'); // Import Sequelize operators
 
 // Create arrangement service
+// exports.createArrangement = async (arrangementData) => {
+//   const transaction = await sequelize.transaction(); // Begin a transaction for atomic operations
+//   try {
+//     const newRequestGroup = await db.RequestGroup.create(
+//       {
+//         staff_id: arrangementData.staff_id,
+//         request_created_date: new Date(),
+//       },
+//       { transaction }
+//     );
+
+//     const newArrangement = await db.ArrangementRequest.create(
+//       {
+//         session_type: arrangementData.session_type,
+//         start_date: arrangementData.start_date,
+//         description: arrangementData.description,
+//         request_status: "Pending",
+//         updated_at: new Date(),
+//         approval_comment: null,
+//         approved_at: null,
+//         request_group_id: newRequestGroup.request_group_id,
+//       },
+//       { transaction }
+//     );
+
+//     await transaction.commit();
+//     return newArrangement;
+//   } catch (error) {
+//     await transaction.rollback();
+//     console.error("Error creating arrangement request:", error);
+//     throw new Error("Could not create arrangement request");
+//   }
+// };
+
 exports.createArrangement = async (arrangementData) => {
   const transaction = await sequelize.transaction(); // Begin a transaction for atomic operations
   try {
-    const newRequestGroup = await db.RequestGroup.create(
-      {
-        staff_id: arrangementData.staff_id,
-        request_created_date: new Date(),
-      },
-      { transaction }
-    );
-
-    const newArrangement = await db.ArrangementRequest.create(
-      {
-        session_type: arrangementData.session_type,
+    const existingArrangement = await db.ArrangementRequest.findOne({
+      where: {
         start_date: arrangementData.start_date,
-        description: arrangementData.description,
-        request_status: "Pending",
-        updated_at: new Date(),
-        approval_comment: null,
-        approved_at: null,
-        request_group_id: newRequestGroup.request_group_id,
+        request_status: {
+          [Op.in]: ['Pending', 'Approved'],
+        },
       },
-      { transaction }
-    );
-
-    await transaction.commit();
-    return newArrangement;
+      include: [{
+        model: db.RequestGroup,
+        as: 'RequestGroup',  // Ensure alias matches association
+        where: {
+          staff_id: arrangementData.staff_id,  // Check staff_id in RequestGroup
+        },
+      }],
+    });
+    
+    if (existingArrangement) {
+      // If an arrangement exists, throw an error or return a message
+      console.log('Arrangement already exists:', existingArrangement);  // Log for debugging
+      throw new Error("An arrangement already exists for this date");
+    } else {
+      const newRequestGroup = await db.RequestGroup.create(
+        {
+          staff_id: arrangementData.staff_id,
+          request_created_date: new Date(),
+        },
+        { transaction }
+      );
+  
+      const newArrangement = await db.ArrangementRequest.create(
+        {
+          session_type: arrangementData.session_type,
+          start_date: arrangementData.start_date,
+          description: arrangementData.description,
+          request_status: "Pending",
+          updated_at: new Date(),
+          approval_comment: null,
+          approved_at: null,
+          request_group_id: newRequestGroup.request_group_id,
+        },
+        { transaction }
+      );
+  
+      // Commit the transaction if everything is successful
+      await transaction.commit();
+      return newArrangement;
+    }
   } catch (error) {
+    // Rollback the transaction in case of error
     await transaction.rollback();
     console.error("Error creating arrangement request:", error);
-    throw new Error("Could not create arrangement request");
+    throw new Error(error.message || "Could not create arrangement request");
   }
 };
 

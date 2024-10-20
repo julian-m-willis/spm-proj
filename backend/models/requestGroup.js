@@ -19,6 +19,14 @@ module.exports = (sequelize, DataTypes) => {
       timestamps: false,
       tableName: 'request_groups',
     });
+
+    RequestGroup.associate = function(models) {
+      RequestGroup.hasMany(models.ArrangementRequest, {
+        foreignKey: 'request_group_id',
+        as: 'ArrangementRequest'
+      });
+    };
+    
   
     return RequestGroup;
   };
