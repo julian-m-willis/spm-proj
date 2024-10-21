@@ -65,4 +65,3 @@ jobs:
           git add README.md
           git commit -m "docs(automated): Update coverage badge to ${{ steps.coverage.outputs.coverage }}%"
           git push
-        if: steps.coverage.outputs.coverage != ''
