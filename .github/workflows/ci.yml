@@ -1,0 +1,66 @@
+name: CI for Main Branch with Badge update
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+
+    services:
+      postgres:
+        image: postgres:13
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: myStrongPassword
+          POSTGRES_DB: test_db
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd="pg_isready"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=5
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '20'
+
+      - name: Install dependencies
+        run: npm install
+        working-directory: ./backend
+
+      - name: Run Jest tests with coverage
+        env:
+          PGUSER: postgres
+          PGPASSWORD: myStrongPassword
+          PGDATABASE: test_db
+          PGHOST: localhost
+          PGPORT: 5432
+        run: npm test -- --runInBand --coverage
+        working-directory: ./backend
+
+      - name: Update README with coverage badge
+        run: |
+          sed -i "s/coverage-[0-9.]*%25/coverage-$(grep -oP '<span class=\"strong\">\K[0-9.]+(?=%)' ./backend/coverage/lcov-report/index.html | head -n 1)%25/g"
+        working-directory: ./
+
+      
+      - name: Commit and push README with updated badge
+        run: |
+          git config --global user.name "github-actions"
+          git config --global user.email "github-actions@github.com"
+          git add README.md
+          git commit -m "docs(automated): Update coverage badge to ${{ steps.coverage.outputs.coverage }}%"
+          git push
+        if: steps.coverage.outputs.coverage != ''
