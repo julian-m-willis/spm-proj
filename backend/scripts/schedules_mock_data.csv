@@ -1,0 +1,58 @@
+schedule_id,staff_id,start_date,session_type,description,updated_at,request_id
+,140001,2024-10-07,Work from home,Work from home for staff 140001,25/9/2024 7:27,1
+,140002,2024-10-07,Work from home (AM),Work from home (AM) for staff 140002,25/9/2024 7:27,1
+,140003,2024-10-07,Work from home (PM),Work from home (PM) for staff 140003,25/9/2024 7:27,1
+,140015,2024-10-08,Work from home (PM),Work from home (PM) for staff 140015,25/9/2024 7:27,1
+,140025,2024-10-07,Work from home,Work from home for staff 140025,25/9/2024 7:27,1
+,140078,2024-10-07,Work from home (PM),Work from home (PM) for staff 140078,25/9/2024 7:27,1
+,140102,2024-10-07,Work from home (PM),Work from home (PM) for staff 140102,25/9/2024 7:27,1
+,140102,2024-10-08,Work from home (AM),Work from home (PM) for staff 140102,25/9/2024 7:27,1
+,140103,2024-10-07,Work from home,Work from home for staff 140103,25/9/2024 7:27,1
+,140103,2024-10-08,Work from home,Work from home for staff 140103,25/9/2024 7:27,1
+,140115,2024-10-07,Work from home,Work from home for staff 140115,25/9/2024 7:27,1
+,140115,2024-10-08,Work from home,Work from home for staff 140115,25/9/2024 7:27,1
+,140878,2024-10-07,Work from home (AM),Work from home (AM) for staff 140878,25/9/2024 7:27,1
+,140879,2024-10-07,Work from home (PM),Work from home (PM) for staff 140879,25/9/2024 7:27,1
+,140879,2024-10-08,Work from home,Work from home (PM) for staff 140879,25/9/2024 7:27,1
+,140881,2024-10-07,Work from home (AM),Work from home (AM) for staff 140881,25/9/2024 7:27,1
+,140882,2024-10-07,Work from home (PM),Work from home (PM) for staff 140882,25/9/2024 7:27,1
+,140882,2024-10-08,Work from home (PM),Work from home (PM) for staff 140882,25/9/2024 7:27,1
+,140883,2024-10-07,Work from home,Work from home for staff 140883,25/9/2024 7:27,1
+,140883,2024-10-08,Work from home,Work from home for staff 140883,25/9/2024 7:27,1
+,140886,2024-10-07,Work from home,Work from home for staff 140886,25/9/2024 7:27,1
+,140886,2024-10-08,Work from home,Work from home for staff 140886,25/9/2024 7:27,1
+,140889,2024-10-08,Work from home,Work from home for staff 140889,25/9/2024 7:27,1
+,140890,2024-10-07,Work from home (AM),Work from home (AM) for staff 140890,25/9/2024 7:27,1
+,140891,2024-10-08,Work from home (PM),Work from home (PM) for staff 140891,25/9/2024 7:27,1
+,140893,2024-10-08,Work from home (AM),Work from home (AM) for staff 140893,25/9/2024 7:27,1
+,140894,2024-10-07,Work from home (PM),Work from home (PM) for staff 140894,25/9/2024 7:27,1
+,140895,2024-10-07,Work from home,Work from home for staff 140895,25/9/2024 7:27,1
+,140895,2024-10-08,Work from home,Work from home for staff 140895,25/9/2024 7:27,1
+,140898,2024-10-08,Work from home,Work from home for staff 140898,25/9/2024 7:27,1
+,140901,2024-10-07,Work from home,Work from home for staff 140901,25/9/2024 7:27,1
+,140901,2024-10-08,Work from home,Work from home for staff 140901,25/9/2024 7:27,1
+,140903,2024-10-07,Work from home (PM),Work from home (PM) for staff 140903,25/9/2024 7:27,1
+,140903,2024-10-08,Work from home,Work from home (PM) for staff 140903,25/9/2024 7:27,1
+,140905,2024-10-07,Work from home (AM),Work from home (AM) for staff 140905,25/9/2024 7:27,1
+,140909,2024-10-07,Work from home (PM),Work from home (PM) for staff 140909,25/9/2024 7:27,1
+,140910,2024-10-07,Work from home,Work from home for staff 140910,25/9/2024 7:27,1
+,140911,2024-10-07,Work from home (AM),Work from home (AM) for staff 140911,25/9/2024 7:27,1
+,140911,2024-10-08,Work from home (AM),Work from home (AM) for staff 140911,25/9/2024 7:27,1
+,140917,2024-10-08,Work from home (AM),Work from home (AM) for staff 140917,25/9/2024 7:27,1
+,140918,2024-10-07,Work from home (PM),Work from home (PM) for staff 140918,25/9/2024 7:27,1
+,140918,2024-10-08,Work from home,Work from home (PM) for staff 140918,25/9/2024 7:27,1
+,140919,2024-10-08,Work from home,Work from home for staff 140919,25/9/2024 7:27,1
+,140923,2024-10-08,Work from home (AM),Work from home (AM) for staff 140923,25/9/2024 7:27,1
+,140925,2024-10-07,Work from home,Work from home for staff 140925,25/9/2024 7:27,1
+,140926,2024-10-07,Work from home (AM),Work from home (AM) for staff 140926,25/9/2024 7:27,1
+,140929,2024-10-07,Work from home (AM),Work from home (AM) for staff 140929,25/9/2024 7:27,1
+,140933,2024-10-08,Work from home (PM),Work from home (PM) for staff 140933,25/9/2024 7:27,1
+,140934,2024-10-08,Work from home,Work from home for staff 140934,25/9/2024 7:27,1
+,140935,2024-10-07,Work from home (AM),Work from home (AM) for staff 140935,25/9/2024 7:27,1
+,140937,2024-10-07,Work from home,Work from home for staff 140937,25/9/2024 7:27,1
+,140938,2024-10-07,Work from home (AM),Work from home (AM) for staff 140938,25/9/2024 7:27,1
+,140941,2024-10-07,Work from home (AM),Work from home (AM) for staff 140941,25/9/2024 7:27,1
+,140941,2024-10-08,Work from home (AM),Work from home (AM) for staff 140941,25/9/2024 7:27,1
+,140942,2024-10-07,Work from home (PM),Work from home (PM) for staff 140942,25/9/2024 7:27,1
+,140942,2024-10-08,Work from home (PM),Work from home (PM) for staff 140942,25/9/2024 7:27,1
+,140947,2024-10-08,Work from home (AM),Work from home (AM) for staff 140947,25/9/2024 7:27,1

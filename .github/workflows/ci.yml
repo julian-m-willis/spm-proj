@@ -1,4 +1,4 @@
-name: CI for Main Branch with Badge update
+name: CI with Badge Update
 
 on:
   push:
