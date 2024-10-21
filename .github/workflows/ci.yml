@@ -1,4 +1,4 @@
-name: CI for Express.js Backend with Coverage and Badge Update
+name: CI with Badge Update
 
 on:
   push:
@@ -50,16 +50,9 @@ jobs:
         run: npm test -- --runInBand --coverage
         working-directory: ./backend
 
-      - name: Extract coverage percentage
-        id: coverage
-        run: |
-          COVERAGE=$(grep -Po '(?<="strong">)[0-9.]+(?=%)' ./backend/coverage/lcov-report/index.html | head -n 1)
-          echo "coverage=$COVERAGE" >> $GITHUB_ENV
-        working-directory: ./backend
-
       - name: Update README with coverage badge
         run: |
-          sed -i "s/coverage-[0-9.]*%25/coverage-${{ env.coverage }}%25/g" README.md
+          sed -i "s/coverage-[0-9.]*%25/coverage-$(grep -oP '<span class=\"strong\">\K[0-9.]+(?=%)' ./backend/coverage/lcov-report/index.html | head -n 1)%25/g"
         working-directory: ./
 
       
