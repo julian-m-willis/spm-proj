@@ -63,5 +63,5 @@ jobs:
           git config --global user.name "github-actions"
           git config --global user.email "github-actions@github.com"
           git add README.md
-          git commit -m "docs(automated): Update coverage badge to ${{ steps.coverage.outputs.coverage }}%"
-          git push
+          git commit -m "docs(automated): Update coverage badge to ${{ env.coverage }}%"
+          git push https://x-access-token:${{ secrets.GH_PAT }}@github.com/julian-m-willis/spm-proj.git
