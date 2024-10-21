@@ -57,11 +57,11 @@ jobs:
           sed -i "s/coverage-[0-9.]*%25/coverage-$(grep -oP '<span class=\"strong\">\K[0-9.]+(?=%)' ./backend/coverage/lcov-report/index.html | head -n 1)%25/g" README.md
         working-directory: ./
 
-      
+            
       - name: Commit and push README with updated badge
         run: |
           git config --global user.name "github-actions"
           git config --global user.email "github-actions@github.com"
           git add README.md
           git commit -m "docs(automated): Update coverage badge to ${{ env.coverage }}%"
-          git push https://x-access-token:${{ secrets.GH_PAT }}@github.com/julian-m-willis/spm-proj.git
+          git push git@github.com:julian-m-willis/spm-proj.git
