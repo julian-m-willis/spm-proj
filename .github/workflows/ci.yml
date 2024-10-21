@@ -42,14 +42,10 @@ jobs:
           sed -i "s/coverage-[0-9.]*%25/coverage-$(grep -oP '<span class=\"strong\">\K[0-9.]+(?=%)' ./backend/coverage/lcov-report/index.html | head -n 1)%25/g" README.md
         working-directory: ./
 
-      - name: Start SSH Agent
-        run: eval "$(ssh-agent -s)"
-
-      - name: Add SSH Key
-        run: echo "${{ secrets.SSH_PRIVATE_KEY }}" | tr -d '\r' | ssh-add -
-
       - name: Commit and push README with updated badge
         run: |
+          eval "$(ssh-agent -s)"
+          echo "${{ secrets.SSH_PRIVATE_KEY }}" | tr -d '\r' | ssh-add -
           git config --global user.name "github-actions"
           git config --global user.email "github-actions@github.com"
           git add README.md
