@@ -52,7 +52,7 @@ const ApplyArrangementPage = () => {
       if (!token) return;
 
       const response = await axios.get(
-        `{process.env.API_URL}/schedules/staff/?start_date='1990-10-01'&end_date='2099-10-01'`,
+        `${process.env.NEXT_PUBLIC_API_URL}/schedules/staff/?start_date='1990-10-01'&end_date='2099-10-01'`,
         {
           headers: {
             Authorization: `Bearer ${token}`,
