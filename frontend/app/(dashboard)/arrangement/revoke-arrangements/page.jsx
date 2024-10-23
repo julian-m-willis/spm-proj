@@ -29,7 +29,7 @@ const RevokeRequestsPage = () => {
     if (!token) return;
     try {
       const response = await fetch(
-        "http://localhost:3001/arrangements/manager/approved/",
+        "{process.env.API_URL}/arrangements/manager/approved/",
         {
           method: "GET",
           headers: {
@@ -75,7 +75,7 @@ const RevokeRequestsPage = () => {
     setError(null);
 
     try {
-      const response = await fetch(`http://localhost:3001/arrangements/manager/revoke/${groupId}`, {
+      const response = await fetch(`{process.env.API_URL}/arrangements/manager/revoke/${groupId}`, {
         method: 'POST',
         headers: {
           Authorization: `Bearer ${token}`,

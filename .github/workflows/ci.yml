@@ -5,6 +5,8 @@ on:
     branches:
       - main
       - dev
+    paths-ignore:
+      - README.md
   pull_request:
     branches:
       - main
@@ -42,12 +44,24 @@ jobs:
           sed -i "s/coverage-[0-9.]*%25/coverage-$(grep -oP '<span class=\"strong\">\K[0-9.]+(?=%)' ./backend/coverage/lcov-report/index.html | head -n 1)%25/g" README.md
         working-directory: ./
 
-      - name: Commit and push README with updated badge
+      - name: Check if README.md has changes
+        id: readme_changed
+        run: |
+          if [[ $(git status --porcelain README.md) ]]; then
+            echo "README.md modified"
+            echo "changes=true" >> $GITHUB_ENV
+          else
+            echo "No changes to README.md"
+            echo "changes=false" >> $GITHUB_ENV
+          fi
+
+      - name: Commit and push README with updated badge if changed
+        if: env.changes == 'true'
         run: |
           eval "$(ssh-agent -s)"
           echo "${{ secrets.SSH_PRIVATE_KEY }}" | tr -d '\r' | ssh-add -
           git config --global user.name "github-actions"
           git config --global user.email "github-actions@github.com"
           git add README.md
-          git commit -m "docs(automated): Update coverage badge to ${{ env.coverage }}%"
+          git commit -m "docs(automated): Update coverage badge"
           git push git@github.com:julian-m-willis/spm-proj.git

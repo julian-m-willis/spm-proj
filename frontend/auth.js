@@ -13,7 +13,7 @@ const providers = [
     authorize: async (credentials) => {
       try {
         // Make a POST request to your backend API
-        const response = await axios.post('http://localhost:3001/auth/login', {
+        const response = await axios.post('${process.env.API_URL}/auth/login', {
           email: credentials.email,
           password: credentials.password,
         });
