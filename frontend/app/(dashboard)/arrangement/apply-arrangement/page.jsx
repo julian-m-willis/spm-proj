@@ -52,7 +52,7 @@ const ApplyArrangementPage = () => {
       if (!token) return;
 
       const response = await axios.get(
-        `http://localhost:3001/schedules/staff/?start_date='1990-10-01'&end_date='2099-10-01'`,
+        `{process.env.API_URL}/schedules/staff/?start_date='1990-10-01'&end_date='2099-10-01'`,
         {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -107,7 +107,7 @@ const ApplyArrangementPage = () => {
       }
 
       const response = await axios.post(
-        `http://localhost:3001/arrangements/`,
+        `{process.env.API_URL}/arrangements/`,
         {
           session_type: sessionType,
           start_date: formattedDate,

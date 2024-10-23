@@ -56,7 +56,7 @@ const SchedulePage = () => {
       try {
         const formattedDate = selectedDate.format("YYYY-MM-DD");
         const response = await axios.get(
-          `http://localhost:3001/schedules/staff/team/?start_date=${formattedDate}&end_date=${formattedDate}`,
+          `{process.env.API_URL}/schedules/staff/team/?start_date=${formattedDate}&end_date=${formattedDate}`,
           {
             headers: {
               Authorization: `Bearer ${token}`,

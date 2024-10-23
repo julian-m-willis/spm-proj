@@ -66,7 +66,7 @@ export default function ResponsiveCalendar() {
       const endOfMonth = dayjs(month).endOf('month').format('YYYY-MM-DD');
 
       const response = await axios.get(
-        `http://localhost:3001/schedules/staff/?start_date=${startOfMonth}&end_date=${endOfMonth}`,
+        `{process.env.API_URL}/schedules/staff/?start_date=${startOfMonth}&end_date=${endOfMonth}`,
         {
           headers: {
             Authorization: `Bearer ${token}`,
