@@ -60,13 +60,14 @@ export default function ResponsiveCalendar() {
   // Function to fetch schedule data from the backend
   const fetchScheduleData = async (month) => {
     try {
-      if (!token) return;
-
+      if (!token) {
+        return;
+      }
       const startOfMonth = dayjs(month).startOf('month').format('YYYY-MM-DD');
       const endOfMonth = dayjs(month).endOf('month').format('YYYY-MM-DD');
 
       const response = await axios.get(
-        `{process.env.API_URL}/schedules/staff/?start_date=${startOfMonth}&end_date=${endOfMonth}`,
+        `${process.env.NEXT_PUBLIC_API_URL}/schedules/staff/?start_date=${startOfMonth}&end_date=${endOfMonth}`,
         {
           headers: {
             Authorization: `Bearer ${token}`,

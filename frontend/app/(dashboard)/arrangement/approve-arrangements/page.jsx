@@ -43,7 +43,7 @@ const RequestGroupsPage = () => {
 
     try {
       const response = await fetch(
-        "{process.env.API_URL}/arrangements/manager/",
+        `${process.env.NEXT_PUBLIC_API_URL}/arrangements/manager/`,
         {
           method: "GET",
           headers: {
@@ -89,7 +89,7 @@ const RequestGroupsPage = () => {
   // Handle approval
   const handleApprove = async (groupId) => {
     try {
-      const url = `{process.env.API_URL}/arrangements/manager/approve/${groupId}`;
+      const url = `${process.env.NEXT_PUBLIC_API_URL}/arrangements/manager/approve/${groupId}`;
       const response = await fetch(url, {
         method: "POST",
         headers: {
@@ -126,7 +126,7 @@ const RequestGroupsPage = () => {
   // Handle rejection with comment
   const handleReject = async () => {
     try {
-      const url = `{process.env.API_URL}/arrangements/manager/reject/${selectedGroupId}`;
+      const url = `${process.env.NEXT_PUBLIC_API_URL}/arrangements/manager/reject/${selectedGroupId}`;
       const response = await fetch(url, {
         method: "POST",
         headers: {
@@ -153,7 +153,7 @@ const RequestGroupsPage = () => {
   // Undo action
   const handleUndo = async (groupId) => {
     try {
-      const url = `{process.env.API_URL}/arrangements/manager/undo/${groupId}`;
+      const url = `${process.env.NEXT_PUBLIC_API_URL}/arrangements/manager/undo/${groupId}`;
       const response = await fetch(url, {
         method: "POST",
         headers: {
