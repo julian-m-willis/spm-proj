@@ -107,7 +107,7 @@ const ApplyArrangementPage = () => {
       }
 
       const response = await axios.post(
-        `{process.env.API_URL}/arrangements/`,
+        `${process.env.NEXT_PUBLIC_API_URL}/arrangements/`,
         {
           session_type: sessionType,
           start_date: formattedDate,
