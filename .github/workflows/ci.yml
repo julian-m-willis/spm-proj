@@ -64,4 +64,5 @@ jobs:
           git config --global user.email "github-actions@github.com"
           git add README.md
           git commit -m "docs(automated): Update coverage badge"
-          git push git@github.com:julian-m-willis/spm-proj.git
+          git push git@github.com:julian-m-willis/spm-proj.git HEAD:${GITHUB_REF#refs/heads/}
+
