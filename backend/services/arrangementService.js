@@ -1,10 +1,35 @@
 const db = require("../models"); // Centralized import for all models
 const sequelize = db.sequelize; // Import sequelize instance for transactions
+const { Op } = require('sequelize');  // Import Sequelize operators 
+const dayjs = require('dayjs');
 
-// Create arrangement service
+
+// Create arrangement service with check for existing WFH requests (date-only comparison)
 exports.createArrangement = async (arrangementData) => {
   const transaction = await sequelize.transaction(); // Begin a transaction for atomic operations
   try {
+    // Check for existing ArrangementRequest for the same staff and same date (ignoring time)
+    const existingRequests = await db.ArrangementRequest.findAll({
+      include: [
+        {
+          model: db.RequestGroup,
+          where: { staff_id: arrangementData.staff_id },
+        },
+      ],
+      where: {
+        [Op.and]: [
+          sequelize.where(sequelize.fn('DATE', sequelize.col('start_date')), '=', arrangementData.start_date),  // Compare only the date part
+          { request_status: ['Pending', 'Approved'] },  // Check for Pending and Approved requests
+        ],
+      },
+    });
+
+    // If there's an existing request for the same date with Pending/Approved status, throw an error
+    if (existingRequests.length > 0) {
+      throw new Error('There is already a WFH request on this date for this staff member.');
+    }
+
+    // Create a new Request Group for the staff member
     const newRequestGroup = await db.RequestGroup.create(
       {
         staff_id: arrangementData.staff_id,
@@ -13,11 +38,12 @@ exports.createArrangement = async (arrangementData) => {
       { transaction }
     );
 
+    // Create a new Arrangement Request
     const newArrangement = await db.ArrangementRequest.create(
       {
         session_type: arrangementData.session_type,
         start_date: arrangementData.start_date,
-        description: arrangementData.description,
+        description: arrangementData.description || null, // Description is optional
         request_status: "Pending",
         updated_at: new Date(),
         approval_comment: null,
@@ -32,9 +58,126 @@ exports.createArrangement = async (arrangementData) => {
   } catch (error) {
     await transaction.rollback();
     console.error("Error creating arrangement request:", error);
-    throw new Error("Could not create arrangement request");
+    throw new Error(error.message || "Could not create arrangement request");
   }
 };
+
+exports.createBatchArrangement = async (batchData) => {
+  const transaction = await sequelize.transaction(); // Begin a transaction for atomic operations
+  try {
+    const newRequests = [];
+    const cancelledRequests = [];
+    const { staff_id, session_type, description, selected_days, num_occurrences, repeat_type, start_date } = batchData;
+
+    // Convert selected_days to numerical values (e.g., Monday = 1, Tuesday = 2)
+    const daysOfWeekMap = {
+      "Monday": 1,
+      "Tuesday": 2,
+      "Wednesday": 3,
+      "Thursday": 4,
+      "Friday": 5,
+    };
+
+    const startDay = dayjs(start_date);
+
+    // Get the first valid date based on selected days and start date
+    const firstSelectedDay = selected_days
+      .map(day => daysOfWeekMap[day])
+      .sort((a, b) => a - b)
+      .find(day => startDay.day() <= day); // Find the first selected day after or on the start date
+
+    let firstOccurrenceDate = startDay.day(firstSelectedDay);
+
+    // If no valid day is found in the same week, move to the next week's first selected day
+    if (firstOccurrenceDate.isBefore(startDay)) {
+      firstOccurrenceDate = firstOccurrenceDate.add(1, 'week');
+    }
+
+    // Create the request group once for all occurrences in this batch
+    const newRequestGroup = await db.RequestGroup.create(
+      {
+        staff_id: staff_id,
+        request_created_date: new Date(),
+      },
+      { transaction }
+    );
+
+    for (let i = 0; i < num_occurrences; i++) {
+      for (const day of selected_days) {
+        let dateToApply;
+
+        if (i === 0) {
+          // Use the first valid date for the first occurrence
+          dateToApply = firstOccurrenceDate;
+        } else {
+          if (repeat_type === 'weekly') {
+            dateToApply = firstOccurrenceDate.add(i * 7, 'day').day(daysOfWeekMap[day]);
+          } else if (repeat_type === 'monthly') {
+            dateToApply = firstOccurrenceDate.add(i, 'month').day(daysOfWeekMap[day]);
+          }
+        }
+
+        const formattedDate = dateToApply.format('YYYY-MM-DD');
+
+        // Check if there is an existing request for this date
+        const existingRequests = await db.ArrangementRequest.findAll({
+          include: [{
+            model: db.RequestGroup,
+            where: { staff_id: staff_id },
+          }],
+          where: {
+            [Op.and]: [
+              sequelize.where(sequelize.fn('DATE', sequelize.col('start_date')), '=', formattedDate),
+              { request_status: ['Pending', 'Approved'] },
+            ],
+          },
+        });
+
+        // Cancel existing requests if they exist
+        if (existingRequests.length > 0) {
+          for (const existingRequest of existingRequests) {
+            await db.ArrangementRequest.update(
+              { request_status: 'Cancelled' },
+              { where: { arrangement_id: existingRequest.arrangement_id }, transaction }
+            );
+            cancelledRequests.push(existingRequest);  // Track cancelled requests
+          }
+        }
+
+        // Create a new Arrangement Request for each occurrence, using the same request group
+        const newArrangement = await db.ArrangementRequest.create(
+          {
+            session_type: session_type,
+            start_date: formattedDate,
+            description: description || null,
+            request_status: "Pending",
+            updated_at: new Date(),
+            approval_comment: null,
+            approved_at: null,
+            request_group_id: newRequestGroup.request_group_id,  // Use the same request group for all
+          },
+          { transaction }
+        );
+
+        newRequests.push(newArrangement);  // Track new requests
+      }
+    }
+
+    await transaction.commit();
+
+    return {
+      message: "Batch WFH request created successfully.",
+      new_requests: newRequests,
+      cancelled_requests: cancelledRequests,
+    };
+  } catch (error) {
+    await transaction.rollback();
+    console.error("Error creating batch arrangement request:", error);
+    throw new Error(error.message || "Could not create batch arrangement request");
+  }
+};
+
+
 
 // Get all arrangements service
 exports.getAllArrangements = async () => {

@@ -1,4 +1,4 @@
-name: Build and Push Frontend and Backend Docker Images
+name: CD
 
 on:
   workflow_run:

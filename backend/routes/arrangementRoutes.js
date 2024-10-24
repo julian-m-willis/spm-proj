@@ -11,6 +11,12 @@ router.post(
   authentorizeRole([1, 2, 3]),
   arrangementController.createArrangement
 );
+router.post(
+  "/batch/",
+  authenticateToken,
+  authentorizeRole([1, 2, 3]),
+  arrangementController.createBatchArrangement
+);
 router.get(
   "/",
   authenticateToken,
