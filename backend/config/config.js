@@ -8,7 +8,13 @@ module.exports = {
     host: process.env.DB_HOST,
     dialect: 'postgres',
     port: process.env.DB_PORT,
-    logging: console.log
+    logging: false,
+    dialectOptions: {
+      ssl: {
+        require: true,             // Enforce SSL
+        rejectUnauthorized: false  // Allow self-signed certs (RDS default)
+      }
+    }
   },
   test: {
     username: process.env.DB_USER,
@@ -26,6 +32,12 @@ module.exports = {
     host: process.env.DB_HOST,
     dialect: 'postgres',
     port: process.env.DB_PORT,
-    logging: false
-  },
+    logging: false,
+    dialectOptions: {
+      ssl: {
+        require: true,             // Enforce SSL
+        rejectUnauthorized: false  // Allow self-signed certs (RDS default)
+      }
+    }
+  }
 };

@@ -1,0 +1,73 @@
+name: CD
+
+on:
+  workflow_run:
+    workflows: ["CI with Badge Update"]  # Matches the name of your CI workflow
+    types:
+      - completed
+
+jobs:
+  build-and-push:
+    if: ${{ github.event.workflow_run.conclusion == 'success' && github.ref == 'refs/heads/main' }}  # Only run on main branch after CI succeeds
+    runs-on: ubuntu-latest
+
+    steps:
+      # Step 1: Checkout the code
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      # Step 2: Set up Docker Buildx
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v1
+
+      # Step 3: Cache Docker layers
+      - name: Cache Docker layers
+        uses: actions/cache@v3
+        with:
+          path: /tmp/.buildx-cache
+          key: ${{ runner.os }}-buildx-${{ github.sha }}
+          restore-keys: |
+            ${{ runner.os }}-buildx-
+
+      # Step 4: Log in to Docker Hub
+      - name: Log in to Docker Hub
+        uses: docker/login-action@v2
+        with:
+          username: julianwillis
+          password: ${{ secrets.DOCKER_PASSWORD }}
+
+      # Step 5: Build and push the Frontend image
+      - name: Build Frontend Docker image
+        run: |
+          docker build --pull --cache-from=type=local,src=/tmp/.buildx-cache --cache-to=type=local,dest=/tmp/.buildx-cache -t julianwillis/spm-frontend:latest ./frontend/.
+          docker push julianwillis/spm-frontend:latest
+
+      # Step 6: Build and push the Backend image
+      - name: Build Backend Docker image
+        run: |
+          docker build --pull --cache-from=type=local,src=/tmp/.buildx-cache --cache-to=type=local,dest=/tmp/.buildx-cache -t julianwillis/spm-backend:latest ./backend/.
+          docker push julianwillis/spm-backend:latest
+
+      # Step 6: SSH into Frontend EC2 and Pull the Latest Frontend Image
+      - name: Deploy Frontend to EC2
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ secrets.FRONTEND_EC2_IP }}
+          username: ec2-user
+          key: ${{ secrets.EC2_SSH_KEY }}
+          script: |
+            docker pull julianwillis/spm-frontend:latest
+            docker rm -f spm-frontend || true
+            docker run -d --name spm-frontend -p 80:80 julianwillis/spm-frontend:latest
+
+      # Step 7: SSH into Backend EC2 and Pull the Latest Backend Image
+      - name: Deploy Backend to EC2
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ secrets.BACKEND_EC2_IP }}
+          username: ec2-user
+          key: ${{ secrets.EC2_SSH_KEY }}
+          script: |
+            docker pull julianwillis/spm-backend:latest
+            docker rm -f spm-backend || true
+            docker run -d --name spm-backend -p 3001:3001 --env-file .env julianwillis/spm-backend:latest
