@@ -1,4 +1,5 @@
-// Mock the `RequestGroup` and `ArrangementRequest` models
+const dayjs = require('dayjs'); // Re-import the mocked dayjs
+
 jest.mock('../../models', () => ({
   ArrangementRequest: {
     findAll: jest.fn(),
@@ -18,9 +19,12 @@ jest.mock('../../models', () => ({
       commit: jest.fn(),
       rollback: jest.fn(),
     })),
-  },
+    fn: jest.fn((fnName, col) => `${fnName}(${col})`), // Mock sequelize.fn
+    col: jest.fn((colName) => colName), // Mock sequelize.col
+    where: jest.fn(), // Mock sequelize.where
+  }
 }));
-
+const { Op } = require('sequelize');
 const { ArrangementRequest, RequestGroup, Schedule, sequelize } = require('../../models');
 const arrangementService = require('../../services/arrangementService');
 
@@ -29,62 +33,147 @@ describe('arrangementService', () => {
     jest.clearAllMocks(); // Clear mocks after each test
   });
 
-  // test('should create a new arrangement with a request group', async () => {
-  //   const arrangementData = {
-  //     session_type: 'Workshop',
-  //     start_date: new Date(),
-  //     description: 'Team-building workshop',
-  //     staff_id: 2
-  //   };
+  describe('createArrangement', () => {
+    test('should create a new arrangement when no existing request is found', async () => {
+      const arrangementData = {
+        session_type: 'WFH',
+        start_date: '2024-10-05',
+        description: 'Working from home',
+        staff_id: 1,
+      };
 
-  //   // Mock RequestGroup.create to resolve with a request group
-  //   RequestGroup.create.mockResolvedValue({
-  //     request_group_id: 1,
-  //     staff_id: 2,
-  //     request_created_date: new Date(),
-  //   });
+      // Mocking findAll to return no existing requests
+      ArrangementRequest.findAll.mockResolvedValue([]);
 
-  //   // Mock ArrangementRequest.create to resolve with a new arrangement
-  //   ArrangementRequest.create.mockResolvedValue({
-  //     arrangement_id: 1,
-  //     session_type: 'Workshop',
-  //     start_date: new Date(),
-  //     description: 'Team-building workshop',
-  //     request_status: 'Pending',
-  //     request_group_id: 1,
-  //   });
+      // Mocking RequestGroup.create to create a new request group
+      RequestGroup.create.mockResolvedValue({
+        request_group_id: 1,
+      });
 
-  //   const transactionMock = {
-  //     commit: jest.fn(),
-  //     rollback: jest.fn(),
-  //   };
+      // Mocking ArrangementRequest.create to create a new arrangement
+      ArrangementRequest.create.mockResolvedValue({
+        arrangement_id: 1,
+        session_type: arrangementData.session_type,
+        start_date: arrangementData.start_date,
+        request_status: 'Pending',
+      });
 
-  //   sequelize.transaction.mockResolvedValue(transactionMock); // Mock transaction
+      const transactionMock = {
+        commit: jest.fn(),
+        rollback: jest.fn(),
+      };
+      sequelize.transaction.mockResolvedValue(transactionMock);
 
-  //   // Call the service method
-  //   const result = await arrangementService.createArrangement(arrangementData);
+      const result = await arrangementService.createArrangement(arrangementData);
 
-  //   // Assertions
-  //   expect(RequestGroup.create).toHaveBeenCalledWith({
-  //     staff_id: arrangementData.staff_id,
-  //     request_created_date: expect.any(Date),
-  //   }, { transaction: expect.any(Object) });
+      expect(ArrangementRequest.findAll).toHaveBeenCalledWith({
+        include: [
+          {
+            model: RequestGroup,
+            where: { staff_id: arrangementData.staff_id },
+          },
+        ],
+        where: {
+          [Op.and]: [
+            sequelize.where(sequelize.fn('DATE', sequelize.col('start_date')), '=', arrangementData.start_date),
+            { request_status: ['Pending', 'Approved'] },
+          ],
+        },
+      });
 
-  //   expect(ArrangementRequest.create).toHaveBeenCalledWith({
-  //     session_type: arrangementData.session_type,
-  //     start_date: arrangementData.start_date,
-  //     description: arrangementData.description,
-  //     request_status: 'Pending',
-  //     updated_at: expect.any(Date),
-  //     approval_comment: null,
-  //     approved_at: null,
-  //     request_group_id: 1,
-  //   }, { transaction: expect.any(Object) });
+      expect(RequestGroup.create).toHaveBeenCalledWith(
+        { staff_id: arrangementData.staff_id, request_created_date: expect.any(Date) },
+        { transaction: expect.any(Object) }
+      );
 
-  //   expect(transactionMock.commit).toHaveBeenCalled();
-  //   expect(result).toBeDefined();
-  //   expect(result.session_type).toBe('Workshop');
-  // });
+      expect(ArrangementRequest.create).toHaveBeenCalledWith(
+        {
+          session_type: arrangementData.session_type,
+          start_date: arrangementData.start_date,
+          description: arrangementData.description,
+          request_status: 'Pending',
+          updated_at: expect.any(Date),
+          approval_comment: null,
+          approved_at: null,
+          request_group_id: 1,
+        },
+        { transaction: expect.any(Object) }
+      );
+
+      expect(transactionMock.commit).toHaveBeenCalled();
+      expect(result).toBeDefined();
+      expect(result.arrangement_id).toBe(1);
+    });
+
+    test('should throw an error if an existing request is found', async () => {
+      const arrangementData = {
+        session_type: 'WFH',
+        start_date: '2024-10-05',
+        staff_id: 1,
+      };
+
+      // Mocking findAll to return an existing request
+      ArrangementRequest.findAll.mockResolvedValue([{}]);
+
+      await expect(arrangementService.createArrangement(arrangementData)).rejects.toThrow(
+        'There is already a WFH request on this date for this staff member.'
+      );
+    });
+  });
+
+  describe('createBatchArrangement', () => {
+    test('should create a batch of new arrangements with the same request group', async () => {
+      const batchData = {
+        staff_id: 1,
+        session_type: 'WFH',
+        description: 'Weekly work-from-home',
+        selected_days: ['Monday', 'Wednesday'],
+        num_occurrences: 2,
+        repeat_type: 'weekly',
+        start_date: '2024-10-01',
+      };
+    
+      // Mocking no existing requests
+      ArrangementRequest.findAll.mockResolvedValue([]);
+    
+      // Mocking RequestGroup.create to return a single request group ID for all arrangements
+      RequestGroup.create.mockResolvedValue({ request_group_id: 1 });
+    
+      // Mocking ArrangementRequest.create to simulate successful creation of arrangements
+      ArrangementRequest.create.mockResolvedValue({ arrangement_id: 1 });
+    
+      const transactionMock = {
+        commit: jest.fn(),
+        rollback: jest.fn(),
+      };
+      sequelize.transaction.mockResolvedValue(transactionMock);
+    
+      // Call the service function
+      const result = await arrangementService.createBatchArrangement(batchData);
+    
+      // Verifying that findAll was called to check for existing requests
+      expect(ArrangementRequest.findAll).toHaveBeenCalled();
+    
+      // Verifying that RequestGroup.create was called only once
+      expect(RequestGroup.create).toHaveBeenCalledTimes(1);
+    
+      // Verifying that ArrangementRequest.create was called the correct number of times (2 days * 2 occurrences = 4)
+      expect(ArrangementRequest.create).toHaveBeenCalledTimes(4);
+    
+      // Verifying that all ArrangementRequest.create calls used the same request_group_id
+      expect(ArrangementRequest.create).toHaveBeenCalledWith(
+        expect.objectContaining({ request_group_id: 1 }),
+        { transaction: expect.any(Object) }
+      );
+    
+      // Verifying that the transaction was committed
+      expect(transactionMock.commit).toHaveBeenCalled();
+    
+      // Verifying that the result contains the correct success message
+      expect(result.message).toBe('Batch WFH request created successfully.');
+    });
+    
+  });
 
   test('should approve a request and create schedule entries', async () => {
     const mockRequestGroup = { request_group_id: 1, staff_id: 1001 };

@@ -93,6 +93,15 @@ exports.createBatchArrangement = async (batchData) => {
       firstOccurrenceDate = firstOccurrenceDate.add(1, 'week');
     }
 
+    // Create the request group once for all occurrences in this batch
+    const newRequestGroup = await db.RequestGroup.create(
+      {
+        staff_id: staff_id,
+        request_created_date: new Date(),
+      },
+      { transaction }
+    );
+
     for (let i = 0; i < num_occurrences; i++) {
       for (const day of selected_days) {
         let dateToApply;
@@ -135,16 +144,7 @@ exports.createBatchArrangement = async (batchData) => {
           }
         }
 
-        // Create a new Request Group for each occurrence
-        const newRequestGroup = await db.RequestGroup.create(
-          {
-            staff_id: staff_id,
-            request_created_date: new Date(),
-          },
-          { transaction }
-        );
-
-        // Create a new Arrangement Request for each occurrence
+        // Create a new Arrangement Request for each occurrence, using the same request group
         const newArrangement = await db.ArrangementRequest.create(
           {
             session_type: session_type,
@@ -154,7 +154,7 @@ exports.createBatchArrangement = async (batchData) => {
             updated_at: new Date(),
             approval_comment: null,
             approved_at: null,
-            request_group_id: newRequestGroup.request_group_id,
+            request_group_id: newRequestGroup.request_group_id,  // Use the same request group for all
           },
           { transaction }
         );
@@ -176,6 +176,7 @@ exports.createBatchArrangement = async (batchData) => {
     throw new Error(error.message || "Could not create batch arrangement request");
   }
 };
+
 
 
 // Get all arrangements service
