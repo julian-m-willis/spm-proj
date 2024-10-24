@@ -1,4 +1,4 @@
-name: CI with Badge Update
+name: CI
 
 on:
   push:
