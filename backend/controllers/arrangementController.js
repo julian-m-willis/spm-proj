@@ -14,6 +14,20 @@ exports.createArrangement = async (req, res) => {
   }
 };
 
+exports.createBatchArrangement = async (req, res) => {
+  try {
+    const data = {
+      ...req.body,
+      staff_id: req.user.staff_id,
+    };
+
+    const arrangement = await arrangementService.createBatchArrangement(data);
+    res.status(201).json(arrangement);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};
+
 exports.getAllArrangements = async (req, res) => {
   try {
     const arrangements = await arrangementService.getAllArrangements();
