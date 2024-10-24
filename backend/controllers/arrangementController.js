@@ -102,3 +102,42 @@ exports.getApprovedRequests = async (req, res) => {
     res.status(500).json({ error: "Could not fetch arrangement requests" });
   }
 };
+
+exports.getStaffPendingRequests = async (req, res) => {
+  try {
+    const staff_id = req.user.staff_id;
+    const arrangements = await arrangementService.getStaffPendingRequests(
+      staff_id
+    );
+    res.status(200).json(arrangements);
+  } catch (error) {
+    console.error("Error fetching arrangement requests by staff:", error);
+    res.status(500).json({ error: "Could not fetch arrangement requests" });
+  }
+};
+
+exports.getStaffApprovedRequests = async (req, res) => {
+  try {
+    const staff_id = req.user.staff_id;
+    const arrangements = await arrangementService.getStaffApprovedRequests(
+      staff_id
+    );
+    res.status(200).json(arrangements);
+  } catch (error) {
+    console.error("Error fetching arrangement requests by staff:", error);
+    res.status(500).json({ error: "Could not fetch arrangement requests" });
+  }
+};
+
+// Staff withdraw request controller
+exports.staffWithdrawRequest = async (req, res) => {
+  const staff_id = req.user.staff_id;
+  const { id } = req.params;
+  try {
+    const result = await arrangementService.staffWithdrawRequest(id, staff_id);
+    return res.status(200).json({ message: "Request withdrawn", data: result });
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ error: error.message });
+  }
+};

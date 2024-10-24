@@ -53,4 +53,22 @@ router.get(
   authorizeRole([1, 3]),
   arrangementController.getApprovedRequests
 );
+router.get(
+  "/staff/pending/",
+  authenticateToken,
+  arrangementController.getStaffApprovedRequests
+);
 module.exports = router;
+
+router.get(
+  "/staff/approved/",
+  authenticateToken,
+  arrangementController.getStaffPendingRequests
+);
+module.exports = router;
+
+router.post(
+  "/staff/withdraw/:id",
+  authenticateToken,
+  arrangementController.staffWithdrawRequest
+);
