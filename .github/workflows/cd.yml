@@ -63,4 +63,4 @@ jobs:
           script: |
             docker pull julianwillis/spm-backend:latest
             docker rm -f spm-backend || true
-            docker run -d --name spm-backend -p 3001:3001 --env-file .env julianwillis/spm-backend:latest
+            docker run -d --name spm-backend --network host --env-file .env julianwillis/spm-backend:latest
