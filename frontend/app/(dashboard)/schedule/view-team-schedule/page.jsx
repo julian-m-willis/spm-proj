@@ -43,6 +43,8 @@ const SchedulePage = () => {
     if (session?.user) {
       setToken(session.user.token);
       setDepartmentName(session.user.dept);
+    }else{
+      window.location.reload()
     }
   }, [session]);
 
