@@ -54,6 +54,8 @@ export default function ResponsiveCalendar() {
   useEffect(() => {
     if (session?.user?.token) {
       setToken(session.user.token);
+    }else{
+      window.location.reload()
     }
   }, [session]);
 

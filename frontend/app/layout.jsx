@@ -1,5 +1,6 @@
 import * as React from 'react';
 import { AppProvider } from '@toolpad/core/nextjs';
+import Chip from '@mui/material/Chip';
 import { AppRouterCacheProvider } from '@mui/material-nextjs/v14-appRouter';
 import DashboardIcon from '@mui/icons-material/Dashboard';
 import PersonIcon from '@mui/icons-material/Person';
@@ -10,7 +11,8 @@ import AddIcon from '@mui/icons-material/Add';
 import CalendarTodayIcon from '@mui/icons-material/CalendarToday';
 import AssignmentIcon from '@mui/icons-material/Assignment';
 import CancelScheduleSendIcon from '@mui/icons-material/CancelScheduleSend';
-// import type { Navigation } from '@toolpad/core';
+import LockResetIcon from '@mui/icons-material/LockReset';
+import NotificationsIcon from '@mui/icons-material/Notifications';
 import { SessionProvider, signIn, signOut } from 'next-auth/react';
 import { auth } from '../auth';
 import theme from '../theme';
@@ -20,6 +22,12 @@ const NAVIGATION = [
     segment: '',
     title: 'Dashboard',
     icon: <DashboardIcon />,
+  },
+  {
+    segment: 'notification',
+    title: 'Notifications',
+    icon: <NotificationsIcon />,
+    action: <Chip label="4" color="warning" size="small" />,
   },
   {
     kind: 'divider',
@@ -81,6 +89,15 @@ const NAVIGATION = [
   },
   {
     kind: 'divider',
+  },
+  {
+    kind: 'header',
+    title: 'Account Setting',
+  },
+  {
+    segment: 'arrangement/apply-arrangement',
+    title: 'Reset Password',
+    icon: <LockResetIcon />,
   },
 ];
 

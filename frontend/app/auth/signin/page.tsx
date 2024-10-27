@@ -3,6 +3,7 @@ import type { AuthProvider } from '@toolpad/core';
 import { SignInPage } from '@toolpad/core/SignInPage';
 import { AuthError } from 'next-auth';
 import { providerMap, signIn } from '../../../auth';
+import ForgotPasswordLink from '../../components/auth/ForgotPasswordLink'
 
 export default function SignIn() {
   return (
@@ -20,7 +21,7 @@ export default function SignIn() {
               email: formData.get('email'),
               password: formData.get('password'),
             }),
-            redirectTo: callbackUrl ?? '/',
+            redirectTo: '/',
           });
         } catch (error) {
           // The desired flow for successful sign in in all cases
@@ -48,6 +49,9 @@ export default function SignIn() {
             type: 'UnknownError',
           };
         }
+      }}
+      slots={{
+        forgotPasswordLink: ForgotPasswordLink,
       }}
     />
   );
