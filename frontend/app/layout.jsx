@@ -95,7 +95,7 @@ const NAVIGATION = [
     title: 'Account Setting',
   },
   {
-    segment: 'arrangement/apply-arrangement',
+    segment: 'account/change-password',
     title: 'Reset Password',
     icon: <LockResetIcon />,
   },
