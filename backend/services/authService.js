@@ -71,6 +71,9 @@ exports.resetPassword = async (token, newPassword) => {
 // Change Password Service
 exports.changePassword = async (staffId, currentPassword, newPassword) => {
   const staff = await Staff.findByPk(staffId);
+  if (!staff) {
+    throw new Error('Token is invalid or has expired');
+  };
 
   if (!bcrypt.compareSync(currentPassword, staff.hashed_password)) {
     throw new Error('Current password is incorrect');

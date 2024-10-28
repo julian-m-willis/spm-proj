@@ -35,14 +35,14 @@ exports.resetPassword = async (req, res) => {
 };
 
 // Change Password Controller
-// exports.changePassword = async (req, res) => {
-//   const { currentPassword, newPassword } = req.body;
-//   const staffId = req.user.id; // Assuming staffId is coming from the authenticated token
+exports.changePassword = async (req, res) => {
+  const { currentPassword, newPassword } = req.body;
+  const staffId = req.user.staff_id; // Assuming staffId is coming from the authenticated token
 
-//   try {
-//     const result = await authService.changePassword(staffId, currentPassword, newPassword); // Call the change password service
-//     return res.status(200).json(result); // Success message: Password changed successfully
-//   } catch (error) {
-//     return res.status(400).json({ message: error.message }); // Return error for incorrect current password
-//   }
-// };
+  try {
+    const result = await authService.changePassword(staffId, currentPassword, newPassword); // Call the change password service
+    return res.status(200).json(result); // Success message: Password changed successfully
+  } catch (error) {
+    return res.status(400).json({ message: error.message }); // Return error for incorrect current password
+  }
+};
