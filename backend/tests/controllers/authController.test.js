@@ -8,11 +8,26 @@ app.use(express.json());
 app.post("/login", authController.login);
 app.post("/forget-password", authController.forgetPassword);
 app.post("/reset-password", authController.resetPassword);
-// app.post("/change-password", authController.changePassword);
+app.post("/change-password", authController.changePassword);
 
 jest.mock("../../services/authService");
 
 describe("authController", () => {
+  let req, res;
+
+  beforeEach(() => {
+    req = {
+      body: {},
+      params: {},
+      query: {},
+      user: { staff_id: "test-staff-id" },
+    };
+    res = {
+      status: jest.fn().mockReturnThis(),
+      json: jest.fn(),
+    };
+  });
+  
   describe("login", () => {
     it("should return a token when login is successful", async () => {
       const mockToken = "mockToken";
@@ -94,29 +109,25 @@ describe("authController", () => {
     });
   });
 
-  // describe("changePassword", () => {
-  //   it("should return 200 when the password is changed successfully", async () => {
-  //     const mockResponse = { message: "Password changed successfully" };
-  //     authService.changePassword.mockResolvedValue(mockResponse);
+  describe("changePassword", () => {
+    it("should return 200 status when password is changed successfully", async () => {
+      const mockResponse = { message: "Password changed successfully" };
+      authService.changePassword.mockResolvedValue(mockResponse);
 
-  //     const response = await request(app)
-  //       .post("/change-password")
-  //       .send({ currentPassword: "currentpassword123", newPassword: "newpassword123" });
+      await authController.changePassword(req, res);
 
-  //     expect(response.status).toBe(200);
-  //     expect(response.body).toEqual(mockResponse);
-  //   });
+      expect(res.status).toHaveBeenCalledWith(200);
+      expect(res.json).toHaveBeenCalledWith(mockResponse);
+    });
 
-  //   it("should return 400 when the current password is incorrect", async () => {
-  //     const mockError = new Error("Incorrect current password");
-  //     authService.changePassword.mockRejectedValue(mockError);
+    it("should return 400 status when current password is incorrect", async () => {
+      const mockError = new Error("Incorrect current password");
+      authService.changePassword.mockRejectedValue(mockError);
 
-  //     const response = await request(app)
-  //       .post("/change-password")
-  //       .send({ currentPassword: "wrongpassword", newPassword: "newpassword123" });
+      await authController.changePassword(req, res);
 
-  //     expect(response.status).toBe(400);
-  //     expect(response.body).toEqual({ message: mockError.message });
-  //   });
-  // });
+      expect(res.status).toHaveBeenCalledWith(400);
+      expect(res.json).toHaveBeenCalledWith({ message: mockError.message });
+    });
+  });
 });
