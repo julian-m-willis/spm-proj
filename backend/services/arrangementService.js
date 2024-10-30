@@ -407,3 +407,80 @@ exports.getApprovedRequests = async (manager_id) => {
   };
   return response;
 };
+
+// Get arrangements by staff service
+// services/arrangementService.js
+
+exports.getArrangementbyStaff = async (staff_id) => {
+  const requestGroups = await db.RequestGroup.findAll({
+    where: { staff_id },
+    include: [
+      {
+        model: db.Staff,
+        attributes: ["staff_id", "staff_fname", "staff_lname", "dept", "position"],
+      },
+      {
+        model: db.ArrangementRequest,
+        // No `where` condition here to fetch all statuses
+        attributes: [
+          "arrangement_id",
+          "session_type",
+          "start_date",
+          "description",
+          "request_status",
+          "updated_at",
+          "approval_comment",
+          "approved_at",
+        ],
+      },
+    ],
+  });
+
+  const response = {
+    staff_id: staff_id,
+    request_groups: requestGroups.map((group) => ({
+      request_group_id: group.request_group_id,
+      staff: group.Staff,
+      request_created_date: group.request_created_date,
+      arrangement_requests: group.ArrangementRequests,
+    })),
+  };
+
+  return response;
+};
+
+exports.withdrawRequest = async (id, comment, staff_id) => {
+  const transaction = await sequelize.transaction();
+  try {
+    const requestGroup = await db.RequestGroup.findByPk(id);
+    if (!requestGroup) throw new Error("Request group not found");
+
+    await db.ArrangementRequest.update(
+      { request_status: "Withdrawn", approval_comment: comment },
+      { where: { request_group_id: id }, transaction } 
+    );
+
+    const requests = await db.ArrangementRequest.findAll({
+      where: { request_group_id: id },
+      transaction,
+    });
+
+    for (const request of requests) {
+      await db.Schedule.upsert(
+        {
+          staff_id: requestGroup.staff_id,
+          start_date: request.start_date,
+          session_type: request.session_type,
+          request_id: request.arrangement_id,
+        },
+        { transaction }
+      );
+    }
+
+    await transaction.commit();
+    return { requestGroup, requests };
+  } catch (error) {
+    await transaction.rollback();
+    throw error;
+  }
+};

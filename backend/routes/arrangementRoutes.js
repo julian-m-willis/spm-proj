@@ -60,3 +60,15 @@ router.get(
   arrangementController.getApprovedRequests
 );
 module.exports = router;
+router.get(
+  "/staff/",
+  authenticateToken,
+  authorizeRole([1, 2, 3]),
+  arrangementController.getArrangementbyStaff
+);
+router.post(
+  "/staff/withdraw/:id",
+  authenticateToken,
+  authorizeRole([1, 2, 3]),
+  arrangementController.withdrawRequest
+);
