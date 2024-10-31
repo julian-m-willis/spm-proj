@@ -24,10 +24,9 @@ const NAVIGATION = [
     icon: <DashboardIcon />,
   },
   {
-    segment: 'notification',
+    segment: 'notifications',
     title: 'Notifications',
     icon: <NotificationsIcon />,
-    action: <Chip label="4" color="warning" size="small" />,
   },
   {
     kind: 'divider',

@@ -3,7 +3,7 @@ const { Staff } = require("../../models");
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 const crypto = require("crypto");
-const { Op } = require('sequelize');
+const { Op } = require("sequelize");
 const mailService = require("../../services/mailService");
 
 jest.mock("../../models");
@@ -37,7 +37,13 @@ describe("authService.login", () => {
 
     const result = await authService.login(mockEmail, mockPassword);
 
-    expect(Staff.findOne).toHaveBeenCalledWith({ where: { email: mockEmail } });
+    expect(Staff.findOne).toHaveBeenCalledWith({
+      where: {
+        email: {
+          [Op.iLike]: mockEmail,
+        },
+      },
+    });
     expect(bcrypt.compareSync).toHaveBeenCalledWith(
       mockPassword,
       mockStaff.hashed_password
@@ -65,7 +71,13 @@ describe("authService.login", () => {
     await expect(authService.login(mockEmail, mockPassword)).rejects.toThrow(
       "Invalid credentials"
     );
-    expect(Staff.findOne).toHaveBeenCalledWith({ where: { email: mockEmail } });
+    expect(Staff.findOne).toHaveBeenCalledWith({
+      where: {
+        email: {
+          [Op.iLike]: mockEmail,
+        },
+      },
+    });
     expect(bcrypt.compareSync).not.toHaveBeenCalled();
     expect(jwt.sign).not.toHaveBeenCalled();
   });
@@ -77,7 +89,13 @@ describe("authService.login", () => {
     await expect(authService.login(mockEmail, mockPassword)).rejects.toThrow(
       "Invalid credentials"
     );
-    expect(Staff.findOne).toHaveBeenCalledWith({ where: { email: mockEmail } });
+    expect(Staff.findOne).toHaveBeenCalledWith({
+      where: {
+        email: {
+          [Op.iLike]: mockEmail,
+        },
+      },
+    });
     expect(bcrypt.compareSync).toHaveBeenCalledWith(
       mockPassword,
       mockStaff.hashed_password
@@ -111,7 +129,13 @@ describe("authService.forgetPassword", () => {
 
     const result = await authService.forgetPassword(mockEmail);
 
-    expect(Staff.findOne).toHaveBeenCalledWith({ where: { email: mockEmail } });
+    expect(Staff.findOne).toHaveBeenCalledWith({
+      where: {
+        email: {
+          [Op.iLike]: mockEmail,
+        },
+      },
+    });
 
     // We expect any string for the token and URL
     expect(result).toEqual({
@@ -134,7 +158,13 @@ describe("authService.forgetPassword", () => {
     await expect(authService.forgetPassword(mockEmail)).rejects.toThrow(
       "User not found"
     );
-    expect(Staff.findOne).toHaveBeenCalledWith({ where: { email: mockEmail } });
+    expect(Staff.findOne).toHaveBeenCalledWith({
+      where: {
+        email: {
+          [Op.iLike]: mockEmail,
+        },
+      },
+    });
     expect(crypto.randomBytes).not.toHaveBeenCalled();
     expect(mailService.sendResetPasswordEmail).not.toHaveBeenCalled();
   });
@@ -224,7 +254,11 @@ describe("authService.changePassword", () => {
     bcrypt.compareSync.mockReturnValue(false);
 
     await expect(
-      authService.changePassword(mockStaffId, mockCurrentPassword, mockNewPassword)
+      authService.changePassword(
+        mockStaffId,
+        mockCurrentPassword,
+        mockNewPassword
+      )
     ).rejects.toThrow("Current password is incorrect");
 
     expect(Staff.findByPk).toHaveBeenCalledWith(mockStaffId);
