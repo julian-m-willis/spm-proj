@@ -4,6 +4,7 @@ const cors = require('cors');
 const authRoutes = require('./routes/authRoutes');
 const arrangementRoutes = require('./routes/arrangementRoutes');
 const scheduleRoutes = require('./routes/scheduleRoutes');
+const notificationRoutes = require('./routes/notificationRoutes');
 require('dotenv').config();
 
 app.use(cors({
@@ -18,6 +19,7 @@ app.use(express.json());
 app.use('/auth', authRoutes);
 app.use('/arrangements', arrangementRoutes);
 app.use('/schedules', scheduleRoutes);
+app.use('/notification', notificationRoutes);
 
 
 // Global Error Handling Middleware

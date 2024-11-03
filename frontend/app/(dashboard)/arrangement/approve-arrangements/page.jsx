@@ -35,6 +35,8 @@ const RequestGroupsPage = () => {
   useEffect(() => {
     if (session?.user) {
       setToken(session.user.token);
+    }else{
+      window.location.reload()
     }
   }, [session]);
 

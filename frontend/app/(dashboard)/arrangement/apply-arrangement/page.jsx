@@ -45,7 +45,7 @@ const ApplyArrangementPage = () => {
   const [selectedDate, setSelectedDate] = useState(calculateTwoWorkingDays()); 
   const [startDate, setStartDate] = useState(calculateTwoWorkingDays());
   const [loading, setLoading] = useState(false);
-  const [applyMode, setApplyMode] = useState("ad-hoc");
+  const [applyMode, setApplyMode] = useState("");
   const [sessionType, setSessionType] = useState("");
   const [desc, setDesc] = useState("");
 

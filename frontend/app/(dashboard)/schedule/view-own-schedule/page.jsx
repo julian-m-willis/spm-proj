@@ -21,11 +21,11 @@ function CustomDay(props) {
 
   // Determine badge content based on the schedule, adding "Pending" status
   const badgeContent = scheduleForDay
-    ? scheduleForDay === "WFH" 
+    ? scheduleForDay === "Work from home" 
       ? '🏡' 
-      : scheduleForDay === "WFH (AM)" 
+      : scheduleForDay === "Work from home (AM)" 
         ? '🌞' 
-        : scheduleForDay === "WFH (PM)" 
+        : scheduleForDay === "Work from home (PM)" 
           ? '🌚'
           : scheduleForDay === "Pending Arrangement Request"
             ? '⏳'  // Display pending status
@@ -54,6 +54,8 @@ export default function ResponsiveCalendar() {
   useEffect(() => {
     if (session?.user?.token) {
       setToken(session.user.token);
+    }else{
+      window.location.reload()
     }
   }, [session]);
 
@@ -101,10 +103,10 @@ export default function ResponsiveCalendar() {
   };
 
   const getScheduleColor = (scheduleType) => {
-    if (scheduleType.startsWith('WFH')) return '#2196F3';  // Blue for WFH
+    if (scheduleType.startsWith('Work from home')) return '#2196F3';  // Blue for WFH
     if (scheduleType.startsWith('In office')) return '#4CAF50';  // Green for In-Office
     if (scheduleType === 'Pending Arrangement Request') return '#FF9800';  // Orange for Pending
-    if (scheduleType.startsWith('WFH (AM)') || scheduleType.startsWith('WFH (PM)')) return 'orange';  // Orange for half-day
+    if (scheduleType.startsWith('Work from home (AM)') || scheduleType.startsWith('Work from home (PM)')) return 'orange';  // Orange for half-day
     return 'inherit';  // Default (if no schedule)
   };
 
