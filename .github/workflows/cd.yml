@@ -60,7 +60,6 @@ jobs:
           git push git@github.com:julian-m-willis/spm-proj.git HEAD:${GITHUB_REF#refs/heads/}
 
   build-and-push:
-    if: ${{ github.event.workflow_run.conclusion == 'success' && github.ref == 'refs/heads/main' }}  # Only run on main branch after CI succeeds
     runs-on: ubuntu-latest
 
     steps:
