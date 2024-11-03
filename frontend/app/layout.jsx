@@ -75,6 +75,15 @@ const NAVIGATION = [
     icon: <CalendarTodayIcon />,
   },
   {
+    kind: 'divider',
+    roles:[1, 3]
+  },
+  {
+    kind: 'header',
+    title: 'Approve Requests',
+    roles: [1, 3]
+  },
+  {
     segment: 'arrangement/approve-arrangements',
     title: 'Approve Arrangements',
     icon: <AssignmentIcon />,
