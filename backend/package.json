@@ -4,10 +4,11 @@
   "description": "",
   "main": "app.js",
   "scripts": {
-    "start": "node app.js",
+    "start": "NODE_ENV=production node app.js",
     "dev": "nodemon app.js",
     "test": "jest --forceExit --runInBand",
-    "coverage": "jest --coverage"
+    "coverage": "jest --coverage",
+    "seed": "NODE_ENV=production node scripts/seedStaff.js"
   },
   "keywords": [],
   "author": "",
