@@ -23,7 +23,7 @@ async function scheduleNotification(
     try {
       // Send the notification asynchronously
       await notificationService.createNotification(staff_id, message, title);
-      console.log("Notification sent for request group:", request_group_id);
+      // console.log("Notification sent for request group:", request_group_id);
     } catch (error) {
       console.error("Error sending notification:", error);
     }

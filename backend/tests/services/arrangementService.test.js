@@ -382,90 +382,63 @@ describe("arrangementService", () => {
     });
   });
 
-  describe("createBatchArrangement", () => {
-    test("should create a batch of new arrangements with the same request group", async () => {
+  describe('createBatchArrangement', () => {
+    it('should create batch arrangement and send a notification', async () => {
       const batchData = {
         staff_id: 1,
-        session_type: "WFH",
-        description: "Weekly work-from-home",
-        selected_days: ["Monday", "Wednesday"],
+        session_type: 'Work from Home',
+        description: 'Weekly WFH',
         num_occurrences: 2,
-        repeat_type: "weekly",
-        start_date: "2024-10-01",
+        repeat_type: 'weekly',
+        start_date: '2024-11-06',
       };
-
-      // Mocking no existing requests
-      ArrangementRequest.findAll.mockResolvedValue([]);
-
-      // Mocking RequestGroup.create to return a single request group ID for all arrangements
+  
       RequestGroup.create.mockResolvedValue({ request_group_id: 1 });
-
-      // Mocking ArrangementRequest.create to simulate successful creation of arrangements
-      ArrangementRequest.create.mockResolvedValue({ arrangement_id: 1 });
-
-      const transactionMock = {
-        commit: jest.fn(),
-        rollback: jest.fn(),
-      };
-      sequelize.transaction.mockResolvedValue(transactionMock);
-
-      // Call the service function
-      const result = await arrangementService.createBatchArrangement(batchData);
-
-      // Verifying that findAll was called to check for existing requests
-      expect(ArrangementRequest.findAll).toHaveBeenCalled();
-
-      // Verifying that RequestGroup.create was called only once
-      expect(RequestGroup.create).toHaveBeenCalledTimes(1);
-
-      // Verifying that ArrangementRequest.create was called the correct number of times (2 days * 2 occurrences = 4)
-      expect(ArrangementRequest.create).toHaveBeenCalledTimes(4);
-
-      // Verifying that all ArrangementRequest.create calls used the same request_group_id
-      expect(ArrangementRequest.create).toHaveBeenCalledWith(
-        expect.objectContaining({ request_group_id: 1 }),
-        { transaction: expect.any(Object) }
-      );
-
-      // Verifying that the transaction was committed
-      expect(transactionMock.commit).toHaveBeenCalled();
-
-      // Verifying that the result contains the correct success message
-      expect(result.message).toBe("Batch WFH request created successfully.");
-    });
-    test("should rollback if creating batch request fails", async () => {
-      const batchData = {
-        staff_id: 1,
-        session_type: "WFH",
-        description: "Weekly work-from-home",
-        selected_days: ["Monday", "Wednesday"],
-        num_occurrences: 2,
-        repeat_type: "weekly",
-        start_date: "2024-10-01",
-      };
-
-      // Mocking no existing requests
       ArrangementRequest.findAll.mockResolvedValue([]);
-
-      // Mocking ArrangementRequest.create to simulate successful creation of arrangements
       ArrangementRequest.create.mockResolvedValue({ arrangement_id: 1 });
-
-      const transactionMock = {
-        commit: jest.fn(),
-        rollback: jest.fn(),
-      };
-      sequelize.transaction.mockResolvedValue(transactionMock);
-      RequestGroup.create.mockRejectedValue(new Error("Create failed"));
-
-      sequelize.transaction.mockResolvedValue(transactionMock);
-
-      await expect(
-        arrangementService.createBatchArrangement(batchData)
-      ).rejects.toThrow("Create failed");
-
-      expect(transactionMock.rollback).toHaveBeenCalled();
+      Staff.findByPk.mockResolvedValue({
+        staff_fname: 'John',
+        staff_lname: 'Doe',
+        reporting_manager_id: 2,
+      });
+      notificationService.createNotification.mockResolvedValue();
+  
+      const result = await arrangementService.createBatchArrangement(batchData);
+  
+      expect(sequelize.transaction).toHaveBeenCalled();
+      expect(RequestGroup.create).toHaveBeenCalledWith(
+        {
+          staff_id: batchData.staff_id,
+          request_created_date: expect.any(Date),
+        },
+        { transaction: mockTransaction }
+      );
+      expect(ArrangementRequest.create).toHaveBeenCalledTimes(2); // Expect number of occurrences
+      expect(notificationService.createNotification).toHaveBeenCalledWith(
+        2,
+        'John Doe submitted new repeating WFH request',
+        'New WFH Request'
+      );
+      expect(mockTransaction.commit).toHaveBeenCalled();
+      expect(result).toEqual({
+        message: 'Batch WFH request created successfully.',
+        new_requests: [{ arrangement_id: 1 }, { arrangement_id: 1 }],
+        cancelled_requests: [],
+      });
+    });
+  
+    it('should rollback transaction and throw error on failure', async () => {
+      RequestGroup.create.mockRejectedValue(new Error('Could not create batch arrangement request'));
+  
+      await expect(arrangementService.createBatchArrangement({})).rejects.toThrow(
+        'Could not create batch arrangement request'
+      );
+  
+      expect(mockTransaction.rollback).toHaveBeenCalled();
     });
   });
+
+
   describe("approve Request", () => {
     it("should approve the request and create schedule entries", async () => {
       // Mock finding the request group
@@ -546,9 +519,7 @@ describe("arrangementService", () => {
       RequestGroup.findByPk = jest.fn().mockResolvedValue(mockRequestGroup);
 
       // Mock the update throwing an error
-      ArrangementRequest.update = jest
-        .fn()
-        .mockRejectedValue(new Error("Update failed"));
+      ArrangementRequest.update = jest.fn().mockRejectedValue(new Error("Update failed"));
 
       const id = 1;
       const comment = "Approved by manager";
@@ -563,7 +534,76 @@ describe("arrangementService", () => {
     });
   });
 
-  describe("arrangementService.revokeRequest", () => {
+  describe('approvePartialRequest', () => {
+    beforeEach(() => {
+      mockTransaction = {
+        commit: jest.fn(),
+        rollback: jest.fn(),
+      };
+      ArrangementRequest.update = jest.fn(); // Set a default mock here
+    });
+    afterEach(() => {
+      jest.clearAllMocks(); // Clear mocks after each test
+    });
+
+    it('should approve/reject requests and create schedule entries', async () => {
+      const id = 1;
+      const comment = 'Approved partially';
+      const data = { 101: 'Approved', 102: 'Rejected' };
+      const manager_id = 2;
+  
+      RequestGroup.findByPk.mockResolvedValue({ staff_id: 3 });
+      ArrangementRequest.findAll.mockResolvedValue([
+        { arrangement_id: 101, start_date: '2024-11-06', session_type: 'WFH' },
+      ]);
+      Staff.findByPk.mockResolvedValue({
+        staff_fname: 'Alice',
+        staff_lname: 'Smith',
+      });
+  
+      const result = await arrangementService.approvePartialRequest(id, comment, data, manager_id);
+  
+      // Check database updates for status changes
+      expect(ArrangementRequest.update).toHaveBeenCalledWith(
+        { request_status: 'Approved', approval_comment: comment },
+        { where: { arrangement_id: "101", request_group_id: id } },
+        { transaction: mockTransaction }
+      );
+  
+      expect(ArrangementRequest.update).toHaveBeenCalledWith(
+        { request_status: 'Rejected', approval_comment: comment },
+        { where: { arrangement_id: "102", request_group_id: id } },
+        { transaction: mockTransaction }
+      );
+  
+      // Check schedule entries creation for approved requests
+      expect(Schedule.upsert).toHaveBeenCalledWith(
+        {
+          staff_id: 3,
+          start_date: '2024-11-06',
+          session_type: 'WFH',
+          request_id: 101,
+        },
+        { transaction: mockTransaction }
+      );
+  
+  
+      // Check transaction commit
+      expect(mockTransaction.commit).toHaveBeenCalled();
+      // expect(result).toEqual({ requestGroup: { staff_id: 3 } });
+    });
+  
+    it('should rollback transaction and throw an error if an issue occurs', async () => {
+      RequestGroup.findByPk.mockRejectedValue(new Error('Database error'));
+  
+      await expect(arrangementService.approvePartialRequest(1, 'test', {}, 1)).rejects.toThrow(
+        'Database error'
+      );
+  
+      expect(mockTransaction.rollback).toHaveBeenCalled();
+    });
+  });
+  describe("revokeRequest", () => {
     it("should revoke the request and delete schedule entries", async () => {
       // Mock finding the request group
       const mockRequestGroup = { id: 1, staff_id: 100 };
@@ -659,7 +699,75 @@ describe("arrangementService", () => {
       expect(mockTransaction.rollback).toHaveBeenCalled();
     });
   });
-
+  describe('withdrawRequest', () => {
+    it('should withdraw the request and delete schedule entries', async () => {
+      const id = 1;
+      const comment = 'Request withdrawn by staff';
+      const staff_id = 100;
+  
+      // Mock data
+      const mockRequestGroup = { request_group_id: id, staff_id: 100 };
+      const mockRequests = [
+        { arrangement_id: 101, start_date: '2024-11-06' },
+        { arrangement_id: 102, start_date: '2024-11-13' },
+      ];
+  
+      RequestGroup.findByPk.mockResolvedValue(mockRequestGroup);
+      ArrangementRequest.update.mockResolvedValue([1]); // Simulate successful update
+      ArrangementRequest.findAll.mockResolvedValue(mockRequests);
+      Schedule.destroy.mockResolvedValue(1);
+  
+      const result = await arrangementService.withdrawRequest(id, comment, staff_id);
+  
+      // Check that the request group was found
+      expect(RequestGroup.findByPk).toHaveBeenCalledWith(id);
+      // Check that the request status was updated
+      expect(ArrangementRequest.update).toHaveBeenCalledWith(
+        { request_status: 'Withdrawn', approval_comment: comment },
+        { where: { request_group_id: id }, transaction: mockTransaction }
+      );
+      // Check that the schedule entries were deleted
+      for (const request of mockRequests) {
+        expect(Schedule.destroy).toHaveBeenCalledWith({
+          where: {
+            staff_id: mockRequestGroup.staff_id,
+            start_date: request.start_date,
+          },
+          transaction: mockTransaction,
+        });
+      }
+      // Check that the transaction was committed
+      expect(mockTransaction.commit).toHaveBeenCalled();
+      expect(result).toEqual({ requestGroup: mockRequestGroup, requests: mockRequests });
+    });
+  
+    it('should throw an error if the request group is not found', async () => {
+      RequestGroup.findByPk.mockResolvedValue(null); // Simulate request group not found
+  
+      const id = 1;
+      const comment = 'Request withdrawn by staff';
+      const staff_id = 100;
+  
+      await expect(arrangementService.withdrawRequest(id, comment, staff_id)).rejects.toThrow('Request group not found');
+  
+      // Ensure the transaction was rolled back
+      expect(mockTransaction.rollback).toHaveBeenCalled();
+    });
+  
+    it('should rollback the transaction and throw an error on failure', async () => {
+      RequestGroup.findByPk.mockResolvedValue({ request_group_id: 1, staff_id: 100 });
+      ArrangementRequest.update.mockRejectedValue(new Error('Update failed')); // Simulate update failure
+  
+      const id = 1;
+      const comment = 'Request withdrawn by staff';
+      const staff_id = 100;
+  
+      await expect(arrangementService.withdrawRequest(id, comment, staff_id)).rejects.toThrow('Update failed');
+  
+      // Ensure the transaction was rolled back
+      expect(mockTransaction.rollback).toHaveBeenCalled();
+    });
+  });
   describe("rejectRequest", () => {
     it('should reject the request and update the status to "Rejected"', async () => {
       // Mock finding the request group
