@@ -36,6 +36,12 @@ router.post(
   arrangementController.approveRequest
 );
 router.post(
+  "/manager/approve_partial/:id",
+  authenticateToken,
+  authorizeRole([1, 3]),
+  arrangementController.approvePartialRequest
+);
+router.post(
   "/manager/reject/:id",
   authenticateToken,
   authorizeRole([1, 3]),
@@ -59,7 +65,7 @@ router.get(
   authorizeRole([1, 3]),
   arrangementController.getApprovedRequests
 );
-module.exports = router;
+
 router.get(
   "/staff/",
   authenticateToken,
@@ -72,3 +78,5 @@ router.post(
   authorizeRole([1, 2, 3]),
   arrangementController.withdrawRequest
 );
+
+module.exports = router;
