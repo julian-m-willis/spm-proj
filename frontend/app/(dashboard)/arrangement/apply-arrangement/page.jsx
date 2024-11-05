@@ -7,6 +7,7 @@ import isSameOrAfter from "dayjs/plugin/isSameOrAfter"; // Import isSameOrAfter 
 dayjs.extend(isSameOrAfter); // Extend Day.js
 
 import {
+  Radio,
   Button,
   Container,
   FormControl,
@@ -19,7 +20,7 @@ import {
   Checkbox,
   FormGroup,
   Box,
-} from '@mui/material';
+} from "@mui/material";
 import axios from "axios";
 
 const ApplyArrangementPage = () => {
@@ -28,13 +29,14 @@ const ApplyArrangementPage = () => {
 
   // Function to calculate 2 working days in advance
   const calculateTwoWorkingDays = () => {
-    const today = dayjs().startOf('day');
+    const today = dayjs().startOf("day");
     let daysToAdd = 2;
     let adjustedDate = today;
 
     while (daysToAdd > 0) {
-      adjustedDate = adjustedDate.add(1, 'day');
-      if (adjustedDate.day() !== 0 && adjustedDate.day() !== 6) { // Skip weekends
+      adjustedDate = adjustedDate.add(1, "day");
+      if (adjustedDate.day() !== 0 && adjustedDate.day() !== 6) {
+        // Skip weekends
         daysToAdd--;
       }
     }
@@ -42,21 +44,14 @@ const ApplyArrangementPage = () => {
   };
 
   // Set placeholder to 2 working days in advance
-  const [selectedDate, setSelectedDate] = useState(calculateTwoWorkingDays()); 
+  const [selectedDate, setSelectedDate] = useState(calculateTwoWorkingDays());
   const [startDate, setStartDate] = useState(calculateTwoWorkingDays());
   const [loading, setLoading] = useState(false);
   const [applyMode, setApplyMode] = useState("");
   const [sessionType, setSessionType] = useState("");
   const [desc, setDesc] = useState("");
 
-  // For batch apply
-  const [selectedDaysOfWeek, setSelectedDaysOfWeek] = useState({
-    Monday: false,
-    Tuesday: false,
-    Wednesday: false,
-    Thursday: false,
-    Friday: false,
-  });
+  const [selectedDaysOfWeek, setSelectedDaysOfWeek] = useState("");
   const [numOccurrences, setNumOccurrences] = useState(1);
   const [repeatType, setRepeatType] = useState("weekly");
 
@@ -74,7 +69,7 @@ const ApplyArrangementPage = () => {
 
     if (newDate.day() === 0 || newDate.day() === 6) {
       alert("You cannot apply for WFH on weekends. Please select a weekday.");
-    } else if (newDate.isSameOrAfter(adjustedDate, 'day')) {
+    } else if (newDate.isSameOrAfter(adjustedDate, "day")) {
       setSelectedDate(newDate);
     } else {
       alert("Please select a date that is at least 2 working days in advance.");
@@ -87,7 +82,7 @@ const ApplyArrangementPage = () => {
 
     if (newStartDate.day() === 0 || newStartDate.day() === 6) {
       alert("The start date cannot be on a weekend. Please select a weekday.");
-    } else if (newStartDate.isSameOrAfter(adjustedDate, 'day')) {
+    } else if (newStartDate.isSameOrAfter(adjustedDate, "day")) {
       setStartDate(newStartDate);
     } else {
       alert("The start date must be at least 2 working days in advance.");
@@ -145,32 +140,34 @@ const ApplyArrangementPage = () => {
       setToken(session?.user?.token);
       return;
     }
-  
+
     if (!sessionType) {
       alert("Please select a session type before submitting.");
       return;
     }
-  
-    const selectedDays = Object.keys(selectedDaysOfWeek).filter(
-      (day) => selectedDaysOfWeek[day]
-    );
-  
-    if (selectedDays.length === 0) {
-      alert("Please select at least one day of the week.");
+
+    if (!selectedDaysOfWeek) {
+      alert("Please select a day of the week.");
       return;
     }
   
+    // Check if the start date matches the selected day of the week
+    const selectedDayIndex = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"].indexOf(selectedDaysOfWeek);
+    if (startDate.day() !== selectedDayIndex) {
+      alert(`The start date must match the selected day (${selectedDaysOfWeek}).`);
+      return;
+    }
+
     try {
       const batchData = {
         staff_id: session.user.staff_id, // Send the staff_id from session data
         session_type: sessionType,
         description: desc || null, // Optional description
-        selected_days: selectedDays,
         num_occurrences: numOccurrences,
         repeat_type: repeatType,
         start_date: startDate.format("YYYY-MM-DD"),
       };
-  
+
       const response = await axios.post(
         `${process.env.NEXT_PUBLIC_API_URL}/arrangements/batch/`,
         batchData,
@@ -180,33 +177,35 @@ const ApplyArrangementPage = () => {
           },
         }
       );
-  
+
       const { message, new_requests, cancelled_requests } = response.data;
       let successMessage = message;
-      
+
       if (new_requests.length > 0) {
-        successMessage += `\nNew Requests Created: ${new_requests.map((req) => dayjs(req.start_date).format('DD MMM YYYY')).join(', ')}`;
+        successMessage += `\nNew Requests Created: ${new_requests.map((req) => dayjs(req.start_date).format("DD MMM YYYY")).join(", ")}`;
       }
       if (cancelled_requests.length > 0) {
-        successMessage += `\nCancelled Requests: ${cancelled_requests.map((req) => dayjs(req.start_date).format('DD MMM YYYY')).join(', ')}`;
+        successMessage += `\nCancelled Requests: ${cancelled_requests.map((req) => dayjs(req.start_date).format("DD MMM YYYY")).join(", ")}`;
       }
 
       alert(successMessage);
     } catch (error) {
       console.error("Error applying batch request:", error);
-      alert("There was an error processing your batch request. Please try again.");
+      alert(
+        "There was an error processing your batch request. Please try again."
+      );
     }
   };
-  
 
   return (
     <Container>
       <FormControl fullWidth>
         {/* Dropdown to switch between Ad-hoc and Batch Apply */}
-        <InputLabel id="apply-mode-select-label">Apply Mode</InputLabel>
+        <InputLabel id="apply-mode-select-label" shrink={applyMode !== ""}>Apply Mode</InputLabel>
         <Select
           labelId="apply-mode-select-label"
           id="apply-mode-select"
+          label="Apply Mode"
           value={applyMode}
           onChange={(e) => setApplyMode(e.target.value)}
           style={{ marginBottom: "20px" }}
@@ -257,15 +256,15 @@ const ApplyArrangementPage = () => {
             />
 
             <Box>
-              <Typography>Choose Days of the Week:</Typography>
-              <FormGroup row>
+              <Typography>Choose Day of the Week:</Typography>
+              <FormGroup>
                 {["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"].map(
                   (day) => (
                     <FormControlLabel
                       control={
-                        <Checkbox
-                          checked={selectedDaysOfWeek[day]}
-                          onChange={() => handleDayOfWeekChange(day)}
+                        <Radio
+                          checked={selectedDaysOfWeek === day}
+                          onChange={() => setSelectedDaysOfWeek(day)}
                         />
                       }
                       label={day}
@@ -296,7 +295,7 @@ const ApplyArrangementPage = () => {
                 style={{ marginBottom: "20px" }}
               >
                 <MenuItem value="weekly">Repeat Weekly</MenuItem>
-                <MenuItem value="monthly">Repeat Monthly</MenuItem>
+                <MenuItem value="bi-weekly">Repeat Bi-weekly</MenuItem>
               </Select>
             </FormControl>
 
@@ -314,7 +313,9 @@ const ApplyArrangementPage = () => {
         <Button
           variant="contained"
           style={{ marginTop: "20px" }}
-          onClick={applyMode === "ad-hoc" ? submitAdhocRequest : submitBatchRequest}
+          onClick={
+            applyMode === "ad-hoc" ? submitAdhocRequest : submitBatchRequest
+          }
         >
           Submit Request
         </Button>

@@ -120,35 +120,12 @@ exports.createBatchArrangement = async (batchData) => {
       staff_id,
       session_type,
       description,
-      selected_days,
       num_occurrences,
       repeat_type,
       start_date,
     } = batchData;
 
-    // Convert selected_days to numerical values (e.g., Monday = 1, Tuesday = 2)
-    const daysOfWeekMap = {
-      Monday: 1,
-      Tuesday: 2,
-      Wednesday: 3,
-      Thursday: 4,
-      Friday: 5,
-    };
-
     const startDay = dayjs(start_date);
-
-    // Get the first valid date based on selected days and start date
-    const firstSelectedDay = selected_days
-      .map((day) => daysOfWeekMap[day])
-      .sort((a, b) => a - b)
-      .find((day) => startDay.day() <= day); // Find the first selected day after or on the start date
-
-    let firstOccurrenceDate = startDay.day(firstSelectedDay);
-
-    // If no valid day is found in the same week, move to the next week's first selected day
-    if (firstOccurrenceDate.isBefore(startDay)) {
-      firstOccurrenceDate = firstOccurrenceDate.add(1, "week");
-    }
 
     // Create the request group once for all occurrences in this batch
     const newRequestGroup = await db.RequestGroup.create(
@@ -160,78 +137,73 @@ exports.createBatchArrangement = async (batchData) => {
     );
 
     for (let i = 0; i < num_occurrences; i++) {
-      for (const day of selected_days) {
-        let dateToApply;
+      let dateToApply;
 
-        if (i === 0) {
-          // Use the first valid date for the first occurrence
-          dateToApply = firstOccurrenceDate;
-        } else {
-          if (repeat_type === "weekly") {
-            dateToApply = firstOccurrenceDate
-              .add(i * 7, "day")
-              .day(daysOfWeekMap[day]);
-          } else if (repeat_type === "monthly") {
-            dateToApply = firstOccurrenceDate
-              .add(i, "month")
-              .day(daysOfWeekMap[day]);
-          }
+      if (i === 0) {
+        // Use the provided start date for the first occurrence
+        dateToApply = startDay;
+      } else {
+        if (repeat_type === "weekly") {
+          dateToApply = startDay.add(i * 7, "day");
+        } else if (repeat_type === "bi-weekly") {
+          dateToApply = startDay.add(i * 14, "day");
         }
-
-        const formattedDate = dateToApply.format("YYYY-MM-DD");
-
-        // Check if there is an existing request for this date
-        const existingRequests = await db.ArrangementRequest.findAll({
-          include: [
-            {
-              model: db.RequestGroup,
-              where: { staff_id: staff_id },
-            },
-          ],
-          where: {
-            [Op.and]: [
-              sequelize.where(
-                sequelize.fn("DATE", sequelize.col("start_date")),
-                "=",
-                formattedDate
-              ),
-              { request_status: ["Pending", "Approved"] },
-            ],
-          },
-        });
-
-        // Cancel existing requests if they exist
-        if (existingRequests.length > 0) {
-          for (const existingRequest of existingRequests) {
-            await db.ArrangementRequest.update(
-              { request_status: "Cancelled" },
-              {
-                where: { arrangement_id: existingRequest.arrangement_id },
-                transaction,
-              }
-            );
-            cancelledRequests.push(existingRequest); // Track cancelled requests
-          }
-        }
-
-        // Create a new Arrangement Request for each occurrence, using the same request group
-        const newArrangement = await db.ArrangementRequest.create(
-          {
-            session_type: session_type,
-            start_date: formattedDate,
-            description: description || null,
-            request_status: "Pending",
-            updated_at: new Date(),
-            approval_comment: null,
-            approved_at: null,
-            request_group_id: newRequestGroup.request_group_id, // Use the same request group for all
-          },
-          { transaction }
-        );
-
-        newRequests.push(newArrangement); // Track new requests
       }
+
+      const formattedDate = dateToApply.format("YYYY-MM-DD");
+
+      // Check if there is an existing request for this date
+      const existingRequests = await db.ArrangementRequest.findAll({
+        include: [
+          {
+            model: db.RequestGroup,
+            where: { staff_id: staff_id },
+          },
+        ],
+        where: {
+          [Op.and]: [
+            sequelize.where(
+              sequelize.fn("DATE", sequelize.col("start_date")),
+              "=",
+              formattedDate
+            ),
+            { request_status: ["Pending", "Approved"] },
+          ],
+        },
+      });
+
+      // Cancel existing requests if they exist
+      if (existingRequests.length > 0) {
+        for (const existingRequest of existingRequests) {
+          await db.ArrangementRequest.update(
+            { request_status: "Cancelled" },
+            {
+              where: { arrangement_id: existingRequest.arrangement_id },
+              transaction,
+            }
+          );
+          cancelledRequests.push(existingRequest); // Track cancelled requests
+        }
+      }
+
+      // Create a new Arrangement Request for each occurrence, using the same request group
+      const newArrangement = await db.ArrangementRequest.create(
+        {
+          session_type: session_type,
+          start_date: formattedDate,
+          description: description || null,
+          request_status: "Pending",
+          updated_at: new Date(),
+          approval_comment: null,
+          approved_at: null,
+          request_group_id: newRequestGroup.request_group_id, // Use the same request group for all
+        },
+        { transaction }
+      );
+
+      newRequests.push(newArrangement); // Track new requests
     }
+
     // Send Notification
     const staff_query = await db.Staff.findByPk(staff_id);
     const staff_fname = staff_query.staff_fname;
@@ -259,6 +231,7 @@ exports.createBatchArrangement = async (batchData) => {
     );
   }
 };
+
 
 // Get all arrangements service
 exports.getAllArrangements = async () => {
@@ -316,6 +289,60 @@ exports.getArrangementByManager = async (manager_id) => {
 };
 
 // Approve request service
+exports.approvePartialRequest = async (id, comment, data, manager_id) => {
+  const transaction = await sequelize.transaction();
+  try {
+    // Find the request group
+    const requestGroup = await db.RequestGroup.findByPk(id);
+    if (!requestGroup) throw new Error("Request group not found");
+
+    // Validation check to see if manager allowed to approve
+
+    // Update request status based on provided data (key-value pairs)
+    for (const [arrangementId, status] of Object.entries(data)) {
+      if (status === "Approved" || status === "Rejected") {
+        await db.ArrangementRequest.update(
+          { request_status: status, approval_comment: comment },
+          { where: { arrangement_id: arrangementId, request_group_id: id } },
+          { transaction }
+        );
+      }
+    }
+
+    // Create schedule entries for approved requests only
+    const approvedRequests = await db.ArrangementRequest.findAll({
+      where: { request_group_id: id, request_status: "Approved" },
+    });
+
+    for (const request of approvedRequests) {
+      await db.Schedule.upsert(
+        {
+          staff_id: requestGroup.staff_id,
+          start_date: request.start_date,
+          session_type: request.session_type,
+          request_id: request.arrangement_id,
+        },
+        { transaction }
+      );
+    }
+
+    // Send Notification
+    const staff_query = await db.Staff.findByPk(manager_id);
+    const staff_fname = staff_query.staff_fname;
+    const staff_lname = staff_query.staff_lname;
+    const staff_full_name = `${staff_fname} ${staff_lname}`;
+    const message = `${staff_full_name} has partially approved/rejected your WFH request`;
+    const title = "WFH Request Status Updated";
+    scheduleNotification(id, requestGroup.staff_id, message, title);
+
+    await transaction.commit();
+    return { requestGroup };
+  } catch (error) {
+    await transaction.rollback();
+    throw error; // Rethrow the error for the controller to handle
+  }
+};
+
 exports.approveRequest = async (id, comment, manager_id) => {
   const transaction = await sequelize.transaction();
   try {
@@ -520,7 +547,6 @@ exports.getApprovedRequests = async (manager_id) => {
   return response;
 };
 
-
 // Get arrangements by staff service
 // services/arrangementService.js
 
@@ -530,7 +556,13 @@ exports.getArrangementbyStaff = async (staff_id) => {
     include: [
       {
         model: db.Staff,
-        attributes: ["staff_id", "staff_fname", "staff_lname", "dept", "position"],
+        attributes: [
+          "staff_id",
+          "staff_fname",
+          "staff_lname",
+          "dept",
+          "position",
+        ],
       },
       {
         model: db.ArrangementRequest,
@@ -570,7 +602,7 @@ exports.withdrawRequest = async (id, comment, staff_id) => {
 
     await db.ArrangementRequest.update(
       { request_status: "Withdrawn", approval_comment: comment },
-      { where: { request_group_id: id }, transaction } 
+      { where: { request_group_id: id }, transaction }
     );
 
     const requests = await db.ArrangementRequest.findAll({
@@ -579,15 +611,13 @@ exports.withdrawRequest = async (id, comment, staff_id) => {
     });
 
     for (const request of requests) {
-      await db.Schedule.upsert(
-        {
+      await db.Schedule.destroy({
+        where: {
           staff_id: requestGroup.staff_id,
           start_date: request.start_date,
-          session_type: request.session_type,
-          request_id: request.arrangement_id,
         },
-        { transaction }
-      );
+        transaction,
+      });
     }
 
     await transaction.commit();

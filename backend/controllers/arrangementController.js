@@ -64,6 +64,20 @@ exports.approveRequest = async (req, res) => {
   }
 };
 
+// Approve PARTIAL request controller
+exports.approvePartialRequest = async (req, res) => {
+  const manager_id = req.user.staff_id;
+  const { id } = req.params;
+  const { comment, data } = req.body;
+  try {
+    const result = await arrangementService.approvePartialRequest(id, comment, data, manager_id);
+    return res.status(200).json({ message: "Request approved", data: result });
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ error: error.message });
+  }
+};
+
 exports.rejectRequest = async (req, res) => {
   const manager_id = req.user.staff_id;
   const { id } = req.params;
