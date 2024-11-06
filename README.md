@@ -1,7 +1,7 @@
 # WFH Management System - SPM Project
 
 [![CD](https://github.com/julian-m-willis/spm-proj/actions/workflows/cd.yml/badge.svg)](https://github.com/julian-m-willis/spm-proj/actions/workflows/cd.yml)
-![Coverage](https://img.shields.io/badge/coverage-94.9%25-brightgreen)
+![Coverage](https://img.shields.io/badge/coverage-97.34%25-brightgreen)
 
 
 ## Project Description
