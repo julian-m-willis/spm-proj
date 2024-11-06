@@ -1,8 +1,7 @@
 # WFH Management System - SPM Project
 
-[![CI](https://github.com/julian-m-willis/spm-proj/actions/workflows/ci.yml/badge.svg)](https://github.com/julian-m-willis/spm-proj/actions/workflows/ci.yml)
 [![CD](https://github.com/julian-m-willis/spm-proj/actions/workflows/cd.yml/badge.svg)](https://github.com/julian-m-willis/spm-proj/actions/workflows/cd.yml)
-![Coverage](https://img.shields.io/badge/coverage-94.9%25-brightgreen)
+![Coverage](https://img.shields.io/badge/coverage-97.34%25-brightgreen)
 
 
 ## Project Description
@@ -109,4 +108,3 @@ For questions or support, please contact [Julian Maximillian Willis](mailto:jmwi
 
 ## License
 This project was developed as part of an SMU school assignment. No specific license is applied.
-

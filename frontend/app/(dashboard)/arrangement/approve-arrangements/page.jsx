@@ -11,6 +11,7 @@ import {
   Divider,
   Box,
   Stack,
+  Switch,
   Dialog,
   DialogTitle,
   DialogContent,
@@ -19,24 +20,26 @@ import {
 } from "@mui/material";
 import { format } from "date-fns";
 import { useSession } from "next-auth/react";
+import { FormControlLabel } from "@mui/material";
 
 const RequestGroupsPage = () => {
   const { data: session } = useSession();
   const [token, setToken] = useState(null);
   const [sortBy, setSortBy] = useState("request_created_date");
   const [requestGroups, setRequestGroups] = useState([]);
-  const [actionStatus, setActionStatus] = useState({});
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [openRejectDialog, setOpenRejectDialog] = useState(false);
+  const [actionStatus, setActionStatus] = useState({});
   const [selectedGroupId, setSelectedGroupId] = useState(null);
   const [rejectComment, setRejectComment] = useState("");
+  const [selectedRequests, setSelectedRequests] = useState({});
 
   useEffect(() => {
     if (session?.user) {
       setToken(session.user.token);
-    }else{
-      window.location.reload()
+    } else {
+      window.location.reload();
     }
   }, [session]);
 
@@ -135,7 +138,10 @@ const RequestGroupsPage = () => {
           Authorization: `Bearer ${token}`,
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ requestGroupId: selectedGroupId, comment: rejectComment }),
+        body: JSON.stringify({
+          requestGroupId: selectedGroupId,
+          comment: rejectComment,
+        }),
       });
 
       if (!response.ok) throw new Error("Failed to reject the request");
@@ -166,6 +172,7 @@ const RequestGroupsPage = () => {
       });
 
       if (!response.ok) throw new Error("Failed to undo the request");
+
       updateGroupStatus(groupId, "Pending");
       setActionStatus((prev) => ({
         ...prev,
@@ -183,15 +190,65 @@ const RequestGroupsPage = () => {
         group.request_group_id === groupId
           ? {
               ...group,
-              arrangement_requests: group.arrangement_requests.map((request) =>
-                request.arrangement_id === group.arrangement_requests[0].arrangement_id
-                  ? { ...request, request_status: newStatus }
-                  : request
+              arrangement_requests: group.arrangement_requests.map(
+                (request) => ({
+                  ...request,
+                  request_status: newStatus,
+                })
               ),
             }
           : group
       )
     );
+  };
+
+  const handleToggleSelect = (arrangementId) => {
+    setSelectedRequests((prev) => ({
+      ...prev,
+      [arrangementId]: !prev[arrangementId], // Toggle the selection state for the given arrangement ID
+    }));
+  };
+
+  const handleBatchApproveSelected = async (groupId) => {
+    const selectedIds = Object.keys(selectedRequests).filter(
+      (id) => selectedRequests[id]
+    );
+
+    if (selectedIds.length === 0) {
+      alert("No requests selected for approval.");
+      return;
+    }
+
+    try {
+      const data = selectedIds.reduce((acc, id) => {
+        acc[id] = "Approved"; // Set the status to "Approved" for each selected request
+        return acc;
+      }, {});
+
+      const response = await fetch(
+        `${process.env.NEXT_PUBLIC_API_URL}/arrangements/manager/approve_partial/${groupId}`,
+        {
+          method: "POST",
+          headers: {
+            Authorization: `Bearer ${token}`, // Ensure `token` is defined in your component
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ data }), // Send the data object as the request body
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error("Failed to approve selected requests");
+      }
+
+      // Optionally, update the UI or state to reflect the change
+      updateGroupStatus(groupId, "Partially Approved");
+
+      alert("Selected requests approved successfully.");
+    } catch (err) {
+      console.error(err);
+      alert(`Error: ${err.message}`);
+    }
   };
 
   if (loading) return <Typography>Loading...</Typography>;
@@ -202,7 +259,9 @@ const RequestGroupsPage = () => {
       <Box display="flex" justifyContent="space-between" mb={3}>
         <Typography variant="h5">Arrangement Requests</Typography>
         <Select value={sortBy} onChange={handleSortChange}>
-          <MenuItem value="request_created_date">Sort by Creation Date</MenuItem>
+          <MenuItem value="request_created_date">
+            Sort by Creation Date
+          </MenuItem>
           <MenuItem value="arrangement_requests.0.start_date">
             Sort by Request Date
           </MenuItem>
@@ -241,48 +300,144 @@ const RequestGroupsPage = () => {
               </Typography>
 
               <Stack spacing={1} mt={2}>
-                {group.arrangement_requests.slice(0, 1).map((request) => (
-                  <Box key={request.arrangement_id}>
-                    <Typography>
-                      Start Date:{" "}
-                      {format(new Date(request.start_date), "dd/MM/yyyy")}
-                    </Typography>
-                    <Typography>Session Type: {request.session_type}</Typography>
-                    <Divider sx={{ my: 1 }} />
-                  </Box>
-                ))}
+                {group.arrangement_requests
+                  .sort(
+                    (a, b) => new Date(a.start_date) - new Date(b.start_date)
+                  ) // Sort by date
+                  .map((request) => (
+                    <Box key={request.arrangement_id}>
+                      <Typography>
+                        Start Date:{" "}
+                        {format(new Date(request.start_date), "dd/MM/yyyy")}
+                      </Typography>
+                      <Typography>
+                        Session Type: {request.session_type}
+                      </Typography>
+                      <Typography color="green">
+                        Status: {request.request_status}
+                      </Typography>
+                      <Divider sx={{ my: 1 }} />
+
+                      {/* Toggle button for batch processing only */}
+                      {group.arrangement_requests.length > 1 && (
+                        <FormControlLabel
+                          control={
+                            <Switch
+                              disabled={
+                                group.arrangement_requests[0].request_status !==
+                                "Pending"
+                              }
+                              checked={
+                                !!selectedRequests[request.arrangement_id]
+                              }
+                              onChange={() =>
+                                handleToggleSelect(request.arrangement_id)
+                              }
+                            />
+                          }
+                          label="Approve"
+                        />
+                      )}
+                    </Box>
+                  ))}
               </Stack>
 
               <Box mt={2} display="flex" justifyContent="space-between">
-                {actionStatus[group.request_group_id] ? (
-                  <Button
-                    variant="contained"
-                    color="warning"
-                    size="small"
-                    onClick={() => handleUndo(group.request_group_id)}
-                  >
-                    Undo
-                  </Button>
+                {/* Adhoc application buttons */}
+                {group.arrangement_requests.length === 1 ? (
+                  <>
+                    {group.arrangement_requests[0].request_status ===
+                      "Pending" && (
+                      <Button
+                        variant="contained"
+                        color="primary"
+                        size="small"
+                        onClick={() => handleApprove(group.request_group_id)}
+                      >
+                        Approve
+                      </Button>
+                    )}
+                    {group.arrangement_requests[0].request_status ===
+                      "Pending" && (
+                      <Button
+                        variant="contained"
+                        color="secondary"
+                        size="small"
+                        onClick={() => handleRejectOpen(group.request_group_id)}
+                      >
+                        Reject
+                      </Button>
+                    )}
+                    {(group.arrangement_requests[0].request_status ===
+                      "Approved" ||
+                      group.arrangement_requests[0].request_status ===
+                        "Rejected") && (
+                      <Button
+                        variant="contained"
+                        color="warning"
+                        size="small"
+                        onClick={() => handleUndo(group.request_group_id)}
+                      >
+                        Undo
+                      </Button>
+                    )}
+                  </>
                 ) : (
                   <>
-                    <Button
-                      variant="contained"
-                      color="primary"
-                      size="small"
-                      onClick={() => handleApprove(group.request_group_id)}
-                      disabled={actionStatus[group.request_group_id]}
-                    >
-                      Approve
-                    </Button>
-                    <Button
-                      variant="contained"
-                      color="secondary"
-                      size="small"
-                      onClick={() => handleRejectOpen(group.request_group_id)}
-                      disabled={actionStatus[group.request_group_id]}
-                    >
-                      Reject
-                    </Button>
+                    {/* Batch application buttons */}
+                    {group.arrangement_requests.some(
+                      (request) => request.request_status === "Pending"
+                    ) && (
+                      <Button
+                        variant="contained"
+                        color="primary"
+                        size="small"
+                        onClick={() => handleApprove(group.request_group_id)}
+                      >
+                        Approve All
+                      </Button>
+                    )}
+                    {group.arrangement_requests.some(
+                      (request) => request.request_status === "Pending"
+                    ) && (
+                      <Button
+                        variant="contained"
+                        color="secondary"
+                        size="small"
+                        onClick={() => handleRejectOpen(group.request_group_id)}
+                      >
+                        Reject All
+                      </Button>
+                    )}
+                    {group.arrangement_requests.some(
+                      (request) =>
+                        request.request_status === "Approved" ||
+                        request.request_status === "Rejected" ||
+                        request.request_status === "Partially Approved"
+                    ) && (
+                      <Button
+                        variant="contained"
+                        color="warning"
+                        size="small"
+                        onClick={() => handleUndo(group.request_group_id)}
+                      >
+                        Undo All
+                      </Button>
+                    )}
+                    {group.arrangement_requests.some(
+                      (request) => request.request_status === "Pending"
+                    ) && (
+                      <Button
+                        variant="contained"
+                        color="success"
+                        size="small"
+                        onClick={() =>
+                          handleBatchApproveSelected(group.request_group_id)
+                        }
+                      >
+                        Approve Selected
+                      </Button>
+                    )}
                   </>
                 )}
               </Box>
