@@ -44,6 +44,7 @@ const NAVIGATION = [
     segment: 'schedule/view-team-schedule',
     title: "View Team's Schedule",
     icon: <GroupIcon />,
+    roles: [2, 3],
   },
   {
     segment: 'schedule/view-department-schedule',
