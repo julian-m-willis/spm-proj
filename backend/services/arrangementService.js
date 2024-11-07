@@ -232,7 +232,6 @@ exports.createBatchArrangement = async (batchData) => {
   }
 };
 
-
 // Get all arrangements service
 exports.getAllArrangements = async () => {
   try {
@@ -290,21 +289,38 @@ exports.getArrangementByManager = async (manager_id) => {
 
 // Approve request service
 exports.approvePartialRequest = async (id, comment, data, manager_id) => {
+  console.log(data);
   const transaction = await sequelize.transaction();
   try {
     // Find the request group
-    const requestGroup = await db.RequestGroup.findByPk(id);
+    const requestGroup = await db.RequestGroup.findByPk(id, { transaction });
     if (!requestGroup) throw new Error("Request group not found");
 
-    // Validation check to see if manager allowed to approve
-
-    // Update request status based on provided data (key-value pairs)
-    for (const [arrangementId, status] of Object.entries(data)) {
-      if (status === "Approved" || status === "Rejected") {
+    // Retrieve all arrangement requests associated with the request group
+    const arrangementRequests = await db.ArrangementRequest.findAll({
+      where: { request_group_id: id },
+      transaction,
+    });
+    // Iterate over each arrangement request and update based on provided data
+    for (const request of arrangementRequests) {
+      const arrangementId = request.arrangement_id;
+      if (data[arrangementId] == "Approved") {
+        // Mark as "Approved" if present in data with "Approved" status
         await db.ArrangementRequest.update(
-          { request_status: status, approval_comment: comment },
-          { where: { arrangement_id: arrangementId, request_group_id: id } },
-          { transaction }
+          { request_status: "Approved", approval_comment: comment },
+          {
+            where: { arrangement_id: arrangementId },
+            transaction,
+          }
+        );
+      } else {
+        // Mark as "Rejected" if missing from data or has any other status
+        await db.ArrangementRequest.update(
+          { request_status: "Rejected", approval_comment: comment },
+          {
+            where: { arrangement_id: arrangementId },
+            transaction,
+          }
         );
       }
     }
@@ -397,17 +413,34 @@ exports.rejectRequest = async (id, comment, manager_id) => {
   const transaction = await sequelize.transaction();
   try {
     // Find the request group
-    const requestGroup = await db.RequestGroup.findByPk(id);
+    const requestGroup = await db.RequestGroup.findByPk(id, { transaction });
     if (!requestGroup) throw new Error("Request group not found");
 
-    //Validation check to see if manager allowed to approve
+    // Validation check to see if the manager is allowed to approve
+    // Add your manager validation logic here if needed
 
-    // Update request group status to approved
+    // Update request group status to "Rejected" with a transaction
     await db.ArrangementRequest.update(
       { request_status: "Rejected", approval_comment: comment },
-      { where: { request_group_id: id } },
-      { transaction }
+      { where: { request_group_id: id }, transaction }
     );
+
+    // Get all arrangement requests related to the request group
+    const requests = await db.ArrangementRequest.findAll({
+      where: { request_group_id: id },
+      transaction,
+    });
+
+    // Loop through each arrangement request to delete related schedules
+    for (const request of requests) {
+      await db.Schedule.destroy({
+        where: {
+          staff_id: requestGroup.staff_id,
+          start_date: request.start_date, // Ensure start_date exists on request
+        },
+        transaction,
+      });
+    }
     // Send Notification
     const staff_query = await db.Staff.findByPk(manager_id);
     const staff_fname = staff_query.staff_fname;
