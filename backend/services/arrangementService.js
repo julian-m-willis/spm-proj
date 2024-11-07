@@ -313,6 +313,15 @@ exports.approvePartialRequest = async (id, comment, data, manager_id) => {
             transaction,
           }
         );
+        await db.Schedule.upsert(
+          {
+            staff_id: requestGroup.staff_id,
+            start_date: request.start_date,
+            session_type: request.session_type,
+            request_id: request.arrangement_id,
+          },
+          { transaction }
+        );
       } else {
         // Mark as "Rejected" if missing from data or has any other status
         await db.ArrangementRequest.update(
@@ -323,23 +332,6 @@ exports.approvePartialRequest = async (id, comment, data, manager_id) => {
           }
         );
       }
-    }
-
-    // Create schedule entries for approved requests only
-    const approvedRequests = await db.ArrangementRequest.findAll({
-      where: { request_group_id: id, request_status: "Approved" },
-    });
-
-    for (const request of approvedRequests) {
-      await db.Schedule.upsert(
-        {
-          staff_id: requestGroup.staff_id,
-          start_date: request.start_date,
-          session_type: request.session_type,
-          request_id: request.arrangement_id,
-        },
-        { transaction }
-      );
     }
 
     // Send Notification
@@ -473,6 +465,23 @@ exports.undo = async (id, comment, manager_id) => {
       { where: { request_group_id: id } },
       { transaction }
     );
+    // Get all arrangement requests related to the request group
+    const requests = await db.ArrangementRequest.findAll({
+      where: { request_group_id: id },
+      transaction,
+    });
+
+    // Loop through each arrangement request to delete related schedules
+    for (const request of requests) {
+      await db.Schedule.destroy({
+        where: {
+          staff_id: requestGroup.staff_id,
+          start_date: request.start_date, // Ensure start_date exists on request
+        },
+        transaction,
+      });
+    }
+
     await transaction.commit();
     return { requestGroup };
   } catch (error) {
